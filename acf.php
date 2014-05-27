@@ -6,7 +6,6 @@ Description: Fully customise WordPress edit screens with powerful fields. Boasti
 Version: 5.0.0 beta
 Author: elliot condon
 Author URI: http://www.elliotcondon.com/
-License: GPL
 Copyright: Elliot Condon
 Text Domain: acf
 Domain Path: /lang
