@@ -932,7 +932,7 @@ function acf_render_flexible_content_layout( $field, $layout, $i, $value ) {
 	
 
 	// collapsed
-	if( isset($_COOKIE[ "acf_collapsed_{$field['key']}" ]) ) {
+	if( !empty($_COOKIE[ "acf_collapsed_{$field['key']}" ]) ) {
 		
 		$collapsed = $_COOKIE[ "acf_collapsed_{$field['key']}" ];
 		$collapsed = explode('|', $collapsed);
