@@ -5618,7 +5618,7 @@ if( ! this.$trigger )
 			
 			// vars
 			var wp_content = $('#wp-content-wrap').exists(),
-				wp_acf_settings = $('#wp-acf_settings-wrap').exists()
+				wp_acf_settings = $('#wp-acf_settings-wrap').exists(),
 				mode = 'tmce';
 			
 			
