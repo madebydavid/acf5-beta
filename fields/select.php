@@ -82,6 +82,9 @@ class acf_field_select extends acf_field
 		$r = array();
 		
 		
+		// strip slashes
+		$options['s'] = wp_unslash($options['s']);
+		
 		if( !empty($field['choices']) )
 		{
 			foreach( $field['choices'] as $k => $v )
