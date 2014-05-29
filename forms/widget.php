@@ -130,20 +130,20 @@ class acf_controller_widget {
 				
 				acf_render_fields( $post_id, $fields, 'div', 'field' );
 				
-				if( $widget->updated ): ?>
-				<script type="text/javascript">
-				(function($) {
-					
-					// vars
-					$widget = $('[id^="widget"][id$="<?php echo $widget->id; ?>"]');
-					
-					acf.do_action('append', $widget );
-					
-				})(jQuery);	
-				</script>
-				<?php endif;
+			endforeach;
+			
+			if( $widget->updated ): ?>
+			<script type="text/javascript">
+			(function($) {
 				
-			endforeach; 
+				// vars
+				$widget = $('[id^="widget"][id$="<?php echo $widget->id; ?>"]');
+				
+				acf.do_action('append', $widget );
+				
+			})(jQuery);	
+			</script>
+			<?php endif;
 		
 		endif;
 		
