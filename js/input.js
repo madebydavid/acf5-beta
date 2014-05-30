@@ -4755,7 +4755,14 @@ acf.add_action('ready append', function( $el ){
 		show_tab_fields : function( $field ) {
 			
 			//console.log('show tab fields %o', $field);
-			$field.nextUntil('.acf-field[data-type="tab"]').each(function(){
+			$field.nextAll('.acf-field').each(function(){
+				
+				// bail early if hid another tab
+				if( acf.is_field( $(this), {type : 'tab'} ) ) {
+					
+					return false;
+				}
+				
 				
 				$(this).removeClass('hidden-by-tab');
 				acf.do_action('show_field', $(this));
@@ -4765,7 +4772,13 @@ acf.add_action('ready append', function( $el ){
 		
 		hide_tab_fields : function( $field ) {
 			
-			$field.nextUntil('.acf-field[data-type="tab"]').each(function(){
+			$field.nextAll('.acf-field').each(function(){
+				
+				// bail early if hid another tab
+				if( acf.is_field( $(this), {type : 'tab'} ) ) {
+					
+					return false;
+				}
 				
 				$(this).addClass('hidden-by-tab');
 				acf.do_action('hide_field', $(this));
