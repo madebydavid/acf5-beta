@@ -5575,11 +5575,26 @@ if( ! this.$trigger )
 	acf.add_action('ready', function( $el ){
 		
 		// validate
-		if( ! acf.fields.wysiwyg.has_tinymce() )
-		{
+		if( ! acf.fields.wysiwyg.has_tinymce() ) {
+		
 			return;
+			
 		}
 		
+		
+		// vars
+		var $the_content = $('#wp-content-wrap'),
+			$acf_content = $('#wp-acf_content-wrap'),
+			mode = 'tmce';
+		
+		
+		// move editor to bottom of page
+		if( $acf_content.exists() ) {
+			
+			$acf_content.parent().appendTo('body');
+			
+		}
+				
 		
 		// events
 		acf.add_action('remove', function( $el ){
@@ -5617,78 +5632,72 @@ if( ! this.$trigger )
 		}).add_action('load', function( $el ){
 			
 			// vars
-			var wp_content = $('#wp-content-wrap').exists(),
-				wp_acf_settings = $('#wp-acf_settings-wrap').exists(),
-				mode = 'tmce';
+			var $fields = acf.get_fields({ type : 'wysiwyg'}, $el);
 			
 			
-			// has_editor
-			if( wp_acf_settings )
-			{
-				// html_mode
-				if( $('#wp-acf_settings-wrap').hasClass('html-active') )
-				{
-					mode = 'html';
-				}
+			// define mode
+			if( $acf_content.exists() && $acf_content.hasClass('html-active') ) {
+				
+				mode = 'html';
+				
 			}
 			
 			
+			// Add events to content editor
+			if( $the_content.exists() ) {
+			
+				acf.fields.wysiwyg.set({ $el : $the_content }).add_events();
+				
+			}
+			
+			
+			// temp change wysiwyg to visual tab
 			setTimeout(function(){
 				
 				// trigger click on hidden WYSIWYG (to get in HTML mode)
-				if( wp_acf_settings && mode == 'html' )
-				{
-					$('#acf_settings-tmce').trigger('click');
+				if( $acf_content.exists() && mode == 'html' ) {
+					
+					$acf_content.find('#acf_content-tmce').trigger('click');
 				}
 				
 			}, 1);
 			
 			
+			// destroy all WYSIWYG fields
+			// This hack will fix a problem when the WP popup is created and hidden, then the ACF popup (image/file field) is opened
 			setTimeout(function(){
 				
-				// vars
-				var $fields = acf.get_fields({ type : 'wysiwyg'}, $el);
-				
-				
-				// Destroy all WYSIWYG fields
-				// This hack will fix a problem when the WP popup is created and hidden, then the ACF popup (image/file field) is opened
 				$fields.each(function(){
 					
 					acf.fields.wysiwyg.set({ $el : $(this).find('.acf-wysiwyg-wrap') }).destroy();
 					
 				});
 				
-				
-				// Add WYSIWYG fields
-				setTimeout(function(){
-					
-					$fields.each(function(){
-					
-						acf.fields.wysiwyg.set({ $el : $(this).find('.acf-wysiwyg-wrap') }).init();
-						
-					});
-					
-				}, 0);
-				
 			}, 10);
+			
+			
+			// initialize all WYSIWYG fields
+			setTimeout(function(){
+				
+				$fields.each(function(){
+					
+					acf.fields.wysiwyg.set({ $el : $(this).find('.acf-wysiwyg-wrap') }).init();
+					
+				});
+				
+			}, 11);
 			
 			
 			setTimeout(function(){
 				
-				// trigger HTML mode for people who want to stay in HTML mode
-				if( wp_acf_settings && mode == 'html' )
-				{
-					$('#acf_settings-html').trigger('click');
-				}
+				// trigger click on hidden WYSIWYG (to get in HTML mode)
+				if( $acf_content.exists() && mode == 'html' ) {
+					
+					$acf_content.find('#acf_content-html').trigger('click');
+				}				
 				
-				// Add events to content editor
-				if( wp_content )
-				{
-					acf.fields.wysiwyg.set({ $el : $('#wp-content-wrap') }).add_events();
-				}
-				
-				
-			}, 11);
+			}, 12);
+			
 			
 		});
 		

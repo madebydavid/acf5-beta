@@ -91,6 +91,10 @@ class acf_field_image extends acf_field {
 	
 	function render_field( $field )
 	{
+		// enqueue
+		acf_enqueue_uploader();
+		
+		
 		// vars
 		$div_atts = array(
 			'class'					=> 'acf-image-uploader acf-cf',

@@ -56,14 +56,9 @@ class acf_input {
 			'acf-input',
 			'acf-datepicker',	
 		));
-
 		
-		// 3.5 media gallery
-		if( function_exists('wp_enqueue_media') && !did_action( 'wp_enqueue_media' ))
-		{
-			wp_enqueue_media();
-		}
 		
+		//acf_enqueue_uploader();
 		
 		// styles
 		wp_enqueue_style(array(
@@ -275,9 +270,10 @@ class acf_input_listener {
 function acf_enqueue_scripts() {
 	
 	// bail early if acf has already loaded
-	if( acf_get_setting('enqueue_scripts') )
-	{
+	if( acf_get_setting('enqueue_scripts') ) {
+	
 		return;
+		
 	}
 	
 	
@@ -287,6 +283,38 @@ function acf_enqueue_scripts() {
 	
 	// add actions
 	new acf_input_listener();
+}
+
+
+function acf_enqueue_uploader() {
+	
+	// bail early if doing ajax
+	if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
+		
+		return;
+		
+	}
+	
+	
+	// bail early if acf has already loaded
+	if( acf_get_setting('enqueue_uploader', false) ) {
+	
+		return;
+		
+	}
+	
+	
+	// update setting
+	acf_update_setting('enqueue_uploader', 1);
+	
+	
+	// enqueue media
+	wp_enqueue_media();
+	
+	
+	// create dummy editor
+	?><div class="acf-hidden"><?php wp_editor( '', 'acf_content' ); ?></div><?php
+	
 }
 
 
@@ -322,6 +350,13 @@ function acf_form_data( $args = array() ) {
 	// save form_data for later actions
 	acf_update_setting('form_data', $args);
 	
+	
+	// enqueue uploader if page allows AJAX fields to appear
+	if( $args['ajax'] ) {
+		
+		acf_enqueue_uploader();
+		
+	}
 	
 	?>
 	<div id="acf-form-data" class="acf-hidden">

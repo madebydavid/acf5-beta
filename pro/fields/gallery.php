@@ -344,6 +344,10 @@ class acf_field_gallery extends acf_field
 	
 	function render_field( $field ) {
 		
+		// enqueue
+		acf_enqueue_uploader();
+		
+		
 		// vars
 		$atts = array(
 			'id'				=> $field['id'],

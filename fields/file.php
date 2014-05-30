@@ -90,6 +90,10 @@ class acf_field_file extends acf_field
 	
 	function render_field( $field )
 	{
+		// enqueue
+		acf_enqueue_uploader();
+		
+		
 		// vars
 		$o = array(
 			'class'		=>	'acf-file-uploader acf-cf',

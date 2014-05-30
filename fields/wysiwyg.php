@@ -1,19 +1,26 @@
 <?php
 
-class acf_field_wysiwyg extends acf_field
-{
+class acf_field_wysiwyg extends acf_field {
+	
+	// vars
+	var $exists = 0;
+	
 	
 	/*
 	*  __construct
 	*
-	*  Set name / label needed for actions / filters
+	*  This function will setup the field type data
 	*
-	*  @since	3.6
-	*  @date	23/01/13
+	*  @type	function
+	*  @date	5/03/2014
+	*  @since	5.0.0
+	*
+	*  @param	n/a
+	*  @return	n/a
 	*/
 	
-	function __construct()
-	{
+	function __construct() {
+		
 		// vars
 		$this->name = 'wysiwyg';
 		$this->label = __("Wysiwyg Editor",'acf');
@@ -30,7 +37,6 @@ class acf_field_wysiwyg extends acf_field
     	
     	
     	// filters
-    	add_filter( 'acf/fields/wysiwyg/toolbars', array( $this, 'toolbars'), 0, 1 );
     	add_filter( 'mce_external_plugins', array( $this, 'mce_external_plugins'), 20, 1 );
 	}
 	
@@ -70,60 +76,27 @@ class acf_field_wysiwyg extends acf_field
 	
 	
 	/*
-	*  load_field()
+	*  get_toolbars
 	*
-	*  This filter is applied to the $field after it is loaded from the database
+	*  This function will return an array of toolbars for the WYSIWYG field
 	*
-	*  @type	filter
-	*  @date	23/01/2013
-	*  @since	3.6.0	
+	*  @type	function
+	*  @date	18/04/2014
+	*  @since	5.0.0
 	*
-	*  @param	$field (array) the field array holding all the field options
-	*  @return	$field
+	*  @param	n/a
+	*  @return	(array)
 	*/
 	
-	function load_field( $field ) {
-		
-		// v4 to v5 compatibility
-		if( $field['media_upload'] === 'yes' ) {
-			
-			$field['media_upload'] = 1;
-			
-		} elseif( $field['media_upload'] === 'no' ) {
-			
-			$field['media_upload'] = 0;
-			
-		}
-		
-		
-		// return
-		return $field;
-		
-	}
-	
-	
-	/*
-	*  toolbars()
-	*
-	*  This filter allows you to customize the WYSIWYG toolbars
-	*
-	*  @param	$toolbars - an array of toolbars
-	*
-	*  @return	$toolbars - the modified $toolbars
-	*
-	*  @type	filter
-	*  @since	3.6
-	*  @date	23/01/13
-	*/
-	
-   	function toolbars( $toolbars ) {
+   	function get_toolbars() {
    		
    		// global
    		global $wp_version;
    		
    		
    		// vars
-   		$editor_id = 'acf_settings';
+   		$toolbars = array();
+   		$editor_id = 'acf_content';
    		
    		
    		if( version_compare($wp_version, '3.9', '>=' ) ) {
@@ -175,8 +148,9 @@ class acf_field_wysiwyg extends acf_field
    		}
    		
    		
-   		// Custom - can be added with acf/fields/wysiwyg/toolbars filter
-   	
+   		// Filter for 3rd party
+   		$toolbars = apply_filters( 'acf/fields/wysiwyg/toolbars', $toolbars );
+   		
    		
    		// return
 	   	return $toolbars;
@@ -198,61 +172,57 @@ class acf_field_wysiwyg extends acf_field
    	
    	function input_form_data( $args ) {
 	   	
-		wp_editor( '', 'acf_settings' );
-	
-   	}
-   	
-   	
-   	/*
-	*  input_admin_footer
-	*
-	*  This function will render acf hidden data such as inputs, js and css
-	*
-	*  @type	function
-	*  @date	8/10/13
-	*  @since	5.0.0
-	*
-	*  @param	$args (array)
-	*  @return	n/a
-	*/
-	
-	function input_admin_footer( $args ) {
-		
-		// add some validation to check for a setting which will prevent the hidden WYWSIWYG + scripts from being registered
-		
-		
-		// vars
-		$t = array();
-		$toolbars = apply_filters( 'acf/fields/wysiwyg/toolbars', array() );
+	   	// vars
+		$json = array();
+		$toolbars = $this->get_toolbars();
 
 		
-		// loop through toolbars and populate $t
-		if( is_array($toolbars) ){ foreach( $toolbars as $label => $rows ){
+		// loop through toolbars
+		if( !empty($toolbars) ) {
 			
-			$label = sanitize_title( $label );
-			$label = str_replace('-', '_', $label);
-			
-			$t[ $label ] = array();
-			
-			if( is_array($rows) ){ foreach( $rows as $k => $v ){
+			foreach( $toolbars as $label => $rows ) {
 				
-				$t[ $label ][ 'theme_advanced_buttons' . $k ] = implode(',', $v);
+				// vars
+				$label = sanitize_title( $label );
+				$label = str_replace('-', '_', $label);
 				
-			}}
-		}}
-		
+				
+				// append to $json
+				$json[ $label ] = array();
+				
+				
+				// convert to strings
+				if( !empty($rows) ) {
+					
+					foreach( $rows as $i => $row ) { 
+						
+						$json[ $label ][ 'theme_advanced_buttons' . $i ] = implode(',', $row);
+						
+					}
+					// foreach
+					
+				}
+				// if
+				
+			}
+			// foreach
+			
+		}
+		// if
 		
 		?>
 		<script type="text/javascript">
 		(function($) {
 		
-			acf.fields.wysiwyg.toolbars = <?php echo json_encode( $t ); ?>;
+			acf.fields.wysiwyg.toolbars = <?php echo json_encode( $json ); ?>;
 		
 		})(jQuery);	
 		</script>
+		
 		<?php
-	}
-	   	
+	
+   	}
+   	
    	
    	/*
 	*  render_field()
@@ -267,7 +237,11 @@ class acf_field_wysiwyg extends acf_field
 	*/
 	
 	function render_field( $field ) {
-	
+		
+		// enqueue
+		acf_enqueue_uploader();
+		
+		
 		// global
 		global $wp_version;
 		
@@ -277,10 +251,10 @@ class acf_field_wysiwyg extends acf_field
 		
 		
 		?>
-		<div id="wp-<?php echo $id; ?>-wrap" class="acf-wysiwyg-wrap wp-editor-wrap" data-toolbar="<?php echo $field['toolbar']; ?>" data-upload="<?php echo $field['media_upload']; ?>">
+		<div id="wp-<?php echo $id; ?>-wrap" class="acf-wysiwyg-wrap wp-core-ui wp-editor-wrap tmce-active" data-toolbar="<?php echo $field['toolbar']; ?>" data-upload="<?php echo $field['media_upload']; ?>">
 			<?php if( user_can_richedit() && $field['media_upload'] ): ?>
-				<div id="wp-<?php echo $id; ?>-editor-tools" class="wp-editor-tools">
-					<div id="wp-<?php echo $id; ?>-media-buttons" class="hide-if-no-js wp-media-buttons">
+				<div id="wp-<?php echo $id; ?>-editor-tools" class="wp-editor-tools hide-if-no-js">
+					<div id="wp-<?php echo $id; ?>-media-buttons" class="wp-media-buttons">
 						<?php do_action( 'media_buttons' ); ?>
 					</div>
 				</div>
@@ -319,8 +293,9 @@ class acf_field_wysiwyg extends acf_field
 	*/
 	
 	function render_field_settings( $field ) {
+		
 		// vars
-		$toolbars = apply_filters( 'acf/fields/wysiwyg/toolbars', array() );
+		$toolbars = $this->get_toolbars();
 		$choices = array();
 		
 		if( is_array($toolbars) )
