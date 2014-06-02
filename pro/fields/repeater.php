@@ -191,15 +191,15 @@ class acf_field_repeater extends acf_field
 						<?php foreach( $field['sub_fields'] as $sub_field ): 
 							
 							$atts = array(
-								'class'		=> "acf-th acf-th-{$sub_field['name']}",
-								'data-key'	=> $sub_field['key'],
+								'class'			=> "acf-th acf-th-{$sub_field['name']}",
+								'data-key'		=> $sub_field['key'],
 							);
 							
 							
 							// Add custom width
-							if( count($field['sub_fields']) > 1 && !empty($sub_field['column_width']) ) {
+							if( !empty($sub_field['column_width']) ) {
 							
-								$atts['width'] = "{$sub_field['column_width']}%";
+								$atts['data-width'] = $sub_field['column_width'];
 								
 							}
 								

@@ -988,9 +988,9 @@ function acf_render_flexible_content_layout( $field, $layout, $i, $value ) {
 							
 							
 							// Add custom width
-							if( count($layout['sub_fields']) > 1 && !empty($sub_field['column_width']) ) {
+							if( !empty($sub_field['column_width']) ) {
 							
-								$atts['width'] = "{$sub_field['column_width']}%";
+								$atts['data-width'] = $sub_field['column_width'];
 								
 							}
 								

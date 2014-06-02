@@ -452,7 +452,8 @@ var acf = {
 			
 		},
 		
-		get_field_data : function( $el, name ){
+		/*
+get_field_data : function( $el, name ){
 			
 			// defaults
 			name = name || false;
@@ -466,6 +467,20 @@ var acf = {
 			return this.get_data( $field, name );
 			
 		},
+*/
+		
+		get_field_key : function( $field ){
+		
+			return this.get_data( $field, 'key' );
+			
+		},
+		
+		get_field_type : function( $field ){
+		
+			return this.get_data( $field, 'type' );
+			
+		},
+		
 		
 		get_data : function( $el, name ){
 			
@@ -474,57 +489,53 @@ var acf = {
 			
 			
 			// vars
-			var data = false;
+			var self = this,
+				data = false;
 			
 			
 			// specific data-name
-			if( name )
-			{
+			if( name ) {
+			
 				data = $el.attr('data-' + name)
 				
 				// convert ints (don't worry about floats. I doubt these would ever appear in data atts...)
-        		if( $.isNumeric(data) )
-        		{
-	        		data = parseInt(data);
+        		if( $.isNumeric(data) ) {
+        			
+        			if( data.match(/[^0-9]/) ) {
+	        			
+	        			// leave value if it contains such characters: . + - e
+	        			
+        			} else {
+	        			
+	        			data = parseInt(data);
+	        			
+        			}
+	        		
         		}
-			}
-			else
-			{
+        		
+			} else {
+				
 				// all data-names
 				data = {};
 				
-				if( $el.exists() )
-				{
-					$.each( $el[0].attributes, function( index, attr ) {
-			        	
-			        	if( attr.name.substr(0, 5) == 'data-' )
-			        	{
-			        		// vars
-			        		var v = attr.value,
-			        			k = attr.name.replace('data-', '');
-			        		
-			        		
-			        		// convert ints (don't worry about floats. I doubt these would ever appear in data atts...)
-			        		if( $.isNumeric(v) ) {
-			        			
-			        			if( v.match(/[^0-9]/) ) {
-				        			
-				        			// leave value if it contains such characters: . + - e
-				        			
-			        			} else {
-				        			
-				        			v = parseInt(v);
-				        			
-			        			}
-				        		
-			        		}
-			        		
-			        		
-			        		// add to atts
-				        	data[ k ] = v;
-			        	}
-			        });
-		        }
+				$.each( $el[0].attributes, function( i, attr ) {
+			        
+			        // bail early if not data-
+		        	if( attr.name.substr(0, 5) !== 'data-' ) {
+		        	
+		        		return;
+		        		
+		        	}
+		        	
+		        	
+		        	// vars
+		        	name = attr.name.replace('data-', '');
+		        	
+		        	
+		        	// add to atts
+		        	data[ name ] = self.get_data( $el, name );
+		        	
+		        });
 			}
 			
 			
@@ -1689,167 +1700,224 @@ var acf = {
 			// actions
 			acf.add_action('append', function( $el ){
 				
-				//console.log('acf/setup_fields calling acf.conditional_logic.refresh()');
 				_this.render( $el );
 				
 			});
 			
 			
-			//console.log('acf.conditional_logic.init() calling acf.conditional_logic.refresh()');
+			// debug
+			//console.log( 'conditional_logic.init(%o)', this );
+			
+			
+			// render
 			_this.render();
 			
 		},
 		
 		add : function( key, groups ){
 			
+			// debug
+			//console.log( 'conditional_logic.add(%o, %o)', key, groups );
+			
+			
 			// reference
-			var _this = this;
+			var self = this;
 			
 			
 			// append items
-			_this.items[ key ] = groups;
+			this.items[ key ] = groups;
 			
 			
 			// populate triggers
-			$.each(groups, function( k1, group ){
+			for( var i in groups ) {
 				
-				$.each(group, function( k2, rule ){
+				var group = groups[i];
+				
+				for( var k in group ) {
+					
+					var rule = group[k];
 					
 					// add rule.field to triggers
-					if( !acf.isset(_this, 'triggers', rule.field) )
-					{
-						_this.triggers[ rule.field ] = [];
+					if( typeof this.triggers[rule.field] === 'undefined' ) {
+					
+						this.triggers[rule.field] = [];
+						
 					}
 					
 					
-					// add key to this trigger
-					if( _this.triggers[ rule.field ].indexOf(key) === -1 )
-					{
-						 _this.triggers[ rule.field ].push( key );
+					// ignore trigger if already exists
+					if( this.triggers[rule.field].indexOf(key) !== -1 ) {
+					
+						 continue;
+						 
 					}
+					
+					
+					// append key to this trigger
+					this.triggers[rule.field].push( key );
 										
-				});
+				}
 				
-			});
-			
-		},
-		
-		change : function( $el ){
-			
-			// reference
-			var _this = this;
-			
-			
-			// vars
-			var key = acf.get_field_data($el, 'key');
-			
-			
-			// does this field trigger any actions
-			if( acf.isset(_this, 'triggers', key) )
-			{
-				// update visibility
-				$.each(_this.triggers[ key ], function( i, target ){
-					
-					_this.render_field( target );
-					
-				});
 			}
 			
 		},
 		
-		render_field : function( key ){
+		change : function( $input ){
 			
-			//console.log('render_field %o',key);
+			// debug
+			//console.log( 'conditional_logic.change(%o)', $input );
+			
+			
+			// vars
+			var $field	= acf.get_field_wrap( $input ),
+				$parent = $field.closest('.acf-row, body'),
+				key		= acf.get_field_key( $field );
+			
+			
+			// bail early if this field does not trigger any actions
+			if( typeof this.triggers[key] === 'undefined' ) {
+				
+				return false;
+				
+			}
+			
+			
+			// update visibility
+			for( var i in this.triggers[ key ] ) {
+				
+				// get the target key
+				var target_key = this.triggers[ key ][ i ];
+				
+				
+				// get targets
+				var $targets = acf.get_fields({key : target_key}, $parent);
+				
+				
+				this.render_fields( $targets );
+				
+			}
+			
+		},
+		
+		render : function( $el ){
+			
+			// debug
+			//console.log('render(%o)', $el);
+			
+			
+			// defaults
+			$el = $el || $('body');
+			
+			
+			// get targets
+			var $targets = acf.get_fields( {}, $el );
+			
+			
+			// render fields
+			this.render_fields( $targets );
+			
+		},
+		
+		render_fields : function( $targets ) {
+			
 			// reference
-			var _this = this;
+			var self = this;
+			
+			
+			// loop over targets and render them			
+			$targets.each(function(){
+					
+				self.render_field( $(this) );
+				
+			});
+			
+			
+			// repeater hide column
+			
+			// action for 3rd party customization
+			//acf.do_action('conditional_logic_render_field');
+			
+		},
+		
+		render_field : function( $field ){
+			
+			// reference
+			var self = this;
+			
+			
+			// vars
+			var visibility	= false,
+				key			= acf.get_field_key( $field );
+				
+			
+			// bail early if this field does not contain any conditional logic
+			if( typeof this.items[key] === 'undefined' ) {
+				
+				return false;
+				
+			}
+			
+			
+			// debug
+			//console.log( 'conditional_logic.render_field(%o)', $field );
 			
 			
 			// get conditional logic
 			var groups = this.items[ key ];
 			
 			
-			// get targets
-			var $targets = acf.get_fields({key : key});
-			
-			
-			// may be multiple targets (sub fields)
-			$targets.each(function(){
-			
+			// calculate visibility
+			for( var i in groups ) {
+				
 				// vars
-				var visibility = false;
+				var group		= groups[i],
+					match_group	= true;
 				
-				
-				// $el
-				var $target = $(this);
-				
-				
-				// loop over groups
-				$.each( groups, function( k, group ){
+				for( var k in group ) {
 					
-					var match_group = true;
+					var rule = group[k];
 					
-					
-					// loop over rules
-					$.each( group, function( k2, rule ){
+					if( !self.get_visibility( $field, rule) ) {
 						
-						if( !_this.get_visibility( $target, rule) )
-						{
-							match_group = false;
-							return false;
-						}
+						match_group = false;
+						break;
 						
-					});
-					
-					
-					if( match_group )
-					{
-						visibility = true;
-						return false;
 					}
-					
-				});
-				
-				
-				// hide / show field
-				if( visibility )
-				{
-					_this.show_field( $target );					
-				}
-				else
-				{
-					_this.hide_field( $target );
+										
 				}
 				
 				
-			});
-			
-			
-		},
-		
-		
-		show_field : function( $field ){
-			
-			// vars
-			var key = acf.get_data($field, 'key'),
-				c = 'hidden-by-conditional-logic';
-			
-			
-			if( acf.is_sub_field($field) )
-			{
-				var $repeater = $field.closest('table').parent('.acf-repeater');
-				
-				if( $repeater.exists() && acf.get_data($repeater, 'max') != 1)
-				{
-					c += ' appear-empty';
+				if( match_group ) {
 					
-					$repeater.find('> table > thead th[data-key="' + key + '"]').removeClass( c );
+					visibility = true;
+					break;
+					
 				}
 				
 			}
 			
 			
+			// hide / show field
+			if( visibility ) {
+				
+				self.show_field( $field );					
+			
+			} else {
+				
+				self.hide_field( $field );
+			
+			}
+			
+		},
+		
+		show_field : function( $field ){
+			
+			// vars
+			var key = acf.get_field_key( $field );
+							
+			
 			// add class
-			$field.removeClass( c );
+			$field.removeClass( 'hidden-by-conditional-logic' );
 			
 			
 			// remove "disabled"
@@ -1857,73 +1925,79 @@ var acf = {
 			$field.find('input, textarea, select').not('.acf-disabled').removeAttr('disabled');
 			
 			
-			// hook
+			// action for 3rd party customization
+			acf.do_action('conditional_logic_show_field', $field );
 			acf.do_action('show_field', $field );
 			
 		},
 		
 		hide_field : function( $field ){
 			
+			// debug
+			//console.log( 'conditional_logic.hide_field(%o)', $field );
+			
+			
 			// vars
-			var key = acf.get_data($field, 'key'),
-				c = 'hidden-by-conditional-logic';
-			
-			
-			if( acf.is_sub_field($field) )
-			{
-				var $repeater = $field.closest('table').parent('.acf-repeater');
-				
-				if( $repeater.exists() && acf.get_data($repeater, 'max') != 1)
-				{
-					c += ' appear-empty';
-					
-					$repeater.find('> table > thead th[data-key="' + key + '"]').addClass( c );
-				}
-				
-			}
+			var key = acf.get_field_key( $field );
 			
 			
 			// add class
-			$field.addClass( c );
+			$field.addClass( 'hidden-by-conditional-logic' );
 			
 			
 			// add "disabled"
 			$field.find('input, textarea, select').attr('disabled', 'disabled');
 			
 			
-			// hook
+			// action for 3rd party customization
+			acf.do_action('conditional_logic_hide_field', $field );
 			acf.do_action('hide_field', $field );
 			
 		},
 		
 		get_visibility : function( $target, rule ){
 			
-			// vars
-			var $search = acf.is_sub_field( $target ) ? $target.parent() : $('body');
-			
+			//console.log( 'conditional_logic.get_visibility(%o, %o)', $target, rule );
 			
 			// vars
-			var $trigger = acf.get_fields({key : rule.field}, $search);
+			//var $search = acf.is_sub_field( $target ) ? $target.parent() : $('body');
+			//console.log( '$search %o', $search );
+			
+			// vars
+			var $triggers = acf.get_fields({key : rule.field}),
+				$trigger = null;
 			
 			
-			if( !$trigger.exists() )
-			{
-				// loop through all the parents that could contain sub fields
-				$target.parents('tr').each(function(){
-					
-					$trigger = acf.get_fields({key : rule.field}, $(this));
-					
-					if( $trigger.length == 1 )
-					{
-						return false;
-					}
-					
-				});
+			// bail early if no triggers found
+			if( !$triggers.exists() ) {
+				
+				return false;
 				
 			}
 			
+			
+			// set $trigger
+			$trigger = $triggers.first();
+			
+			
+			// find better $trigger
+			if( $triggers.length > 1 ) {
+				
+				$triggers.each(function(){
+					
+					// vars
+					$row = $(this).closest('.acf-row');
+					
+					
+					if( $target.closest( $row ).exists() ) {
 						
-			//console.log('this.calculate( %o, %o, %o );', rule, $trigger, $target);
+						$trigger = $(this);
+						return false;
+					}
+
+				});
+				
+			}
 			
 			
 			// calculate
@@ -1934,95 +2008,74 @@ var acf = {
 			return visibility;
 		},
 		
-		render : function( $el ){
-			
-			// defaults
-			$el = $el || $('body');
-			
-			
-			// reference
-			var _this = this;
-			
-			
-			acf.get_fields({},$el).each(function(){
-				
-				var key = acf.get_data($(this), 'key');
-				
-				if( acf.isset(_this, 'items', key) )
-				{
-					_this.render_field( key );
-				}
-				/*
-else if( acf.isset(_this, 'triggers', key) )
-				{
-					key = _this.triggers[ key ];
-					_this.render_field( key );
-				}
-*/
-				
-			});
-			
-		},
-		
 		calculate : function( rule, $trigger, $target ){
 			
-			// vars
-			var r = false;
+			// debug
+			//console.log( 'calculate(%o, %o, %o)', rule, $trigger, $target);
 			
-
-			// compare values
-			if( $trigger.hasClass('field_type-true_false') || $trigger.hasClass('field_type-checkbox') || $trigger.hasClass('field_type-radio') )
-			{
+			
+			// vars
+			var type = acf.get_data($trigger, 'type');
+			
+			
+			// input with :checked
+			if( type == 'true_false' || type == 'checkbox' || type == 'radio' ) {
+				
 				var exists = $trigger.find('input[value="' + rule.value + '"]:checked').exists();
 				
+				if( rule.operator == "==" ) {
 				
-				if( rule.operator == "==" )
-				{
-					if( exists )
-					{
-						r = true;
+					if( exists ) {
+					
+						return true;
+						
 					}
-				}
-				else
-				{
-					if( ! exists )
-					{
-						r = true;
+					
+				} else {
+				
+					if( ! exists ) {
+					
+						return true;
+						
 					}
+					
 				}
 				
-			}
-			else
-			{
+			} else {
+				
 				// get val and make sure it is an array
 				var val = $trigger.find('input, textarea, select').last().val();
 				
-				if( ! $.isArray(val) )
-				{
+				if( ! $.isArray(val) ) {
+				
 					val = [ val ];
+					
 				}
 				
 				
-				if( rule.operator == "==" )
-				{
-					if( $.inArray(rule.value, val) > -1 )
-					{
-						r = true;
+				if( rule.operator == "==" ) {
+					
+					if( $.inArray(rule.value, val) > -1 ) {
+					
+						return true;
+						
 					}
-				}
-				else
-				{
-					if( $.inArray(rule.value, val) < 0 )
-					{
-						r = true;
+					
+				} else {
+				
+					if( $.inArray(rule.value, val) < 0 ) {
+					
+						return true;
+						
 					}
+					
 				}
 				
 			}
 			
 			
 			// return
-			return r;
+			return false;
 			
 		}
 		

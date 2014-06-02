@@ -1,5 +1,191 @@
 (function($){
 	
+	// comon
+	acf.pro = {
+		
+		init : function(){
+			
+			// reference
+			var self = this;
+			
+			
+			// actions
+			acf.add_action('conditional_logic_show_field', function( $field ){
+				
+				self.conditional_logic_show_field( $field );
+				
+			});
+			
+			acf.add_action('conditional_logic_hide_field', function( $field ){
+				
+				self.conditional_logic_hide_field( $field );
+				
+			});
+			
+			
+			return this;
+			
+		},
+		
+		conditional_logic_show_field : function( $field ){
+			
+			// bail early if not a sub field
+			if( ! acf.is_sub_field($field) ) {
+				
+				return;
+				
+			}
+			
+			
+			// remove class
+			$field.removeClass('appear-empty');
+			
+			
+			// vars
+			var key = acf.get_field_key( $field ),
+				$table = $field.closest('.acf-table'),
+				$th = $table.find('> thead > tr > th[data-key="' + key + '"]'),
+				$td = $table.find('> tbody > tr:not(.clone) > td[data-key="' + key + '"]');
+			
+			
+			// show entire column
+			$td.filter('.hidden-by-conditional-logic').addClass('appear-empty');
+			$th.show();
+			
+			
+			// render table
+			this.render_table( $table );
+			
+		},
+		
+		conditional_logic_hide_field : function( $field ){
+			
+			// bail early if not a sub field
+			if( ! acf.is_sub_field($field) ) {
+				
+				return;
+				
+			}
+			
+			
+			// add class
+				$field.addClass('appear-empty');
+			
+			// vars
+			var key = acf.get_field_key( $field ),
+				$table = $field.closest('.acf-table'),
+				$th = $table.find('> thead > tr > th[data-key="' + key + '"]'),
+				$td = $table.find('> tbody > tr:not(.clone) > td[data-key="' + key + '"]');
+			
+			
+			// if all cells are hidden, hide the entire column
+			if( $td.filter('.hidden-by-conditional-logic').length == $td.length ) {
+				
+				$td.removeClass('appear-empty');
+				$th.hide();
+				
+			}
+			
+			
+			// render table
+			this.render_table( $table );
+			
+		},
+		
+		render_table : function( $table ){
+			
+			// bail early if table is row layout
+			if( $table.hasClass('row-layout') ) {
+			
+				return;
+				
+			}
+			
+			
+			// vars
+			var $th = $table.find('> thead > tr > th'),
+				available_width = 100,
+				count = 0;
+			
+			
+			// accomodate for order / remove
+			if( $th.filter('.order').exists() ) {
+				
+				available_width = 93;
+				
+			}
+			
+			
+			// clear widths
+			$th.removeAttr('width');
+			
+			
+			// update $th
+			$th = $th.not('.order, .remove');
+			$th = $th.not(':hidden');
+				
+			
+			// set custom widths first
+			$th.filter('[data-width]').each(function(){
+				
+				// bail early if hit limit
+				if( (count+1) == $th.length ) {
+					
+					return false;
+					
+				}
+				
+				
+				// increase counter
+				count++;
+				
+				
+				// vars
+				var width = parseInt( $(this).attr('data-width') );
+				
+				
+				// remove from available
+				available_width -= width;
+				
+				
+				// set width
+				$(this).attr('width', width + '%');
+				
+			});
+			
+			
+			// update $th
+			$th = $th.not('[data-width]');
+			
+			
+			// set custom widths first
+			$th.each(function(){
+				
+				// bail early if hit limit
+				if( (count+1) == $th.length ) {
+					
+					return false;
+					
+				}
+				
+				
+				// increase counter
+				count++;
+				
+				
+				// cal width
+				var width = available_width / $th.length;
+				
+				
+				// set width
+				$(this).attr('width', width + '%');
+				
+			});
+			
+		}
+		
+	}.init();
+	
 	acf.fields.repeater = {
 		
 		// vars	
@@ -78,7 +264,7 @@
 			
 			
 			// set column widths
-			this.render_columns();
+			acf.pro.render_table( this.$el.find('> table') );
 			
 			
 			// disable clone inputs
@@ -89,68 +275,7 @@
 			
 			// render
 			this.render();
-			
-			
-			
-					
-		},
-		
-		render_columns : function(){
-			
-			this.$el.find('.acf-table').each(function(){
 				
-				// vars
-				var $table = $(this);
-				
-				
-				// validate
-				if( ! $table.hasClass('table-layout') ) {
-				
-					return;
-					
-				}
-				
-		
-				// accomodate for order / remove
-				var column_width = 100;
-				if( $table.find('> thead > tr > th.order').exists() ) {
-				
-					column_width = 93;
-					
-				}
-				
-				
-				// find columns that already have a width and remove these amounts from the column_width var
-				$table.find('> thead > tr > th[width]').each(function(){
-					
-					column_width -= parseInt( $(this).attr('width') );
-					
-				});
-		
-				
-				// selecotr
-				var $selector = $table.find('> thead > tr > th.acf-th').not('[width]');
-				
-				if( $selector.length > 1 ) {
-					
-					column_width = column_width / $selector.length;
-					
-					$selector.each(function( i ){
-						
-						// dont add width to last th
-						if( (i+1) == $selector.length  ) {
-						
-							return;
-							
-						}
-						
-						$(this).attr('width', column_width + '%');
-						
-					});
-				}
-				
-			});
-			
 		},
 		
 		render : function(){
@@ -477,8 +602,12 @@
 						
 			
 			// set column widths
-			this.render_columns();
+			this.$values.find('.acf-table').each(function(){
 			
+				acf.pro.render_table( $(this) );
+				
+			});
+						
 			
 			// disable clone inputs
 			// Note: Previous attempted to check if input was already disabled, however the browser caches this attribute, 
@@ -488,64 +617,6 @@
 			
 			// render
 			this.render();
-			
-		},
-		
-		render_columns : function(){
-			
-			this.$el.find('.acf-table').each(function(){
-				
-				// vars
-				var $table = $(this);
-				
-				
-				// validate
-				if( ! $table.hasClass('table-layout') ) {
-				
-					return;
-					
-				}
-				
-		
-				// accomodate for order / remove
-				var column_width = 100;
-				if( $table.find('> thead > tr > th.order').exists() ) {
-				
-					column_width = 93;
-					
-				}
-				
-				
-				// find columns that already have a width and remove these amounts from the column_width var
-				$table.find('> thead > tr > th[width]').each(function(){
-					
-					column_width -= parseInt( $(this).attr('width') );
-					
-				});
-		
-				
-				// selecotr
-				var $selector = $table.find('> thead > tr > th.acf-th').not('[width]');
-				
-				if( $selector.length > 1 ) {
-					
-					column_width = column_width / $selector.length;
-					
-					$selector.each(function( i ){
-						
-						// dont add width to last th
-						if( (i+1) == $selector.length  ) {
-						
-							return;
-							
-						}
-						
-						$(this).attr('width', column_width + '%');
-						
-					});
-				}
-				
-			});
 			
 		},
 		
