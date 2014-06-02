@@ -37,8 +37,12 @@
 			}
 			
 			
-			// remove class
-			$field.removeClass('appear-empty');
+			// bail early if not a td
+			if( ! $field.is('td') ) {
+				
+				return;
+				
+			}
 			
 			
 			// vars
@@ -46,6 +50,10 @@
 				$table = $field.closest('.acf-table'),
 				$th = $table.find('> thead > tr > th[data-key="' + key + '"]'),
 				$td = $table.find('> tbody > tr:not(.clone) > td[data-key="' + key + '"]');
+			
+			
+			// remove class
+			$field.removeClass('appear-empty');
 			
 			
 			// show entire column
@@ -68,14 +76,23 @@
 			}
 			
 			
-			// add class
-				$field.addClass('appear-empty');
+			// bail early if not a td
+			if( ! $field.is('td') ) {
+				
+				return;
+				
+			}
+			
 			
 			// vars
 			var key = acf.get_field_key( $field ),
 				$table = $field.closest('.acf-table'),
 				$th = $table.find('> thead > tr > th[data-key="' + key + '"]'),
 				$td = $table.find('> tbody > tr:not(.clone) > td[data-key="' + key + '"]');
+			
+			
+			// add class
+			$field.addClass('appear-empty');
 			
 			
 			// if all cells are hidden, hide the entire column

@@ -1770,7 +1770,7 @@ get_field_data : function( $el, name ){
 			
 			// vars
 			var $field	= acf.get_field_wrap( $input ),
-				$parent = $field.closest('.acf-row, body'),
+				$parent = $field.parent(),
 				key		= acf.get_field_key( $field );
 			
 			
@@ -1819,7 +1819,7 @@ get_field_data : function( $el, name ){
 		},
 		
 		render_fields : function( $targets ) {
-			
+		
 			// reference
 			var self = this;
 			
@@ -1986,10 +1986,10 @@ get_field_data : function( $el, name ){
 				$triggers.each(function(){
 					
 					// vars
-					$row = $(this).closest('.acf-row');
+					$parent = $(this).parent();
 					
 					
-					if( $target.closest( $row ).exists() ) {
+					if( $target.closest( $parent ).exists() ) {
 						
 						$trigger = $(this);
 						return false;
