@@ -366,12 +366,17 @@ var acf = {
 			
 		},
 		
-		get_fields : function( args, $el, allow_filter ){
+		get_fields : function( args, $el, all ){
+			
+			// debug
+			//console.log( 'acf.get_fields(%o, %o, %o)', args, $el, all );
+			//console.time("acf.get_fields");
+			
 			
 			// defaults
 			args = args || {};
 			$el = $el || $('body');
-			allow_filter = allow_filter || true;
+			all = all || false;
 			
 			
 			// vars
@@ -379,11 +384,11 @@ var acf = {
 			
 			
 			// add selector
-			$.each( args, function( k, v ) {
+			for( k in args ) {
 				
-				selector += '[data-' + k + '="' + v + '"]';
+				selector += '[data-' + k + '="' + args[k] + '"]';
 				
-			});
+			}
 			
 			
 			// get fields
@@ -392,9 +397,10 @@ var acf = {
 			
 			// is current $el a field?
 			// this is the case when editing a field group
-			if( $el.is( selector ) )
-			{
+			if( $el.is( selector ) ) {
+			
 				$fields = $fields.add( $el );
+				
 			}
 			
 			
@@ -403,14 +409,18 @@ var acf = {
 			//console.log( $fields );
 			
 			// filter out fields
-			if( allow_filter )
-			{
+			if( !all ) {
+			
 				$fields = $fields.filter(function(){
 					
 					return acf.apply_filters('is_field_ready_for_js', true, $(this));			
 
 				});
+				
 			}
+			
+			
+			//console.timeEnd("acf.get_fields");
 			
 			
 			// return
@@ -425,7 +435,7 @@ var acf = {
 			
 			
 			// get fields
-			var $fields = this.get_fields({ key : field_key }, $el);
+			var $fields = this.get_fields({ key : field_key }, $el, true);
 			
 			
 			// validate
@@ -1790,7 +1800,7 @@ get_field_data : function( $el, name ){
 				
 				
 				// get targets
-				var $targets = acf.get_fields({key : target_key}, $parent);
+				var $targets = acf.get_fields({key : target_key}, $parent, true);
 				
 				
 				this.render_fields( $targets );
@@ -1810,7 +1820,7 @@ get_field_data : function( $el, name ){
 			
 			
 			// get targets
-			var $targets = acf.get_fields( {}, $el );
+			var $targets = acf.get_fields( {}, $el, true );
 			
 			
 			// render fields
@@ -1964,7 +1974,7 @@ get_field_data : function( $el, name ){
 			//console.log( '$search %o', $search );
 			
 			// vars
-			var $triggers = acf.get_fields({key : rule.field}),
+			var $triggers = acf.get_fields({key : rule.field}, false, true),
 				$trigger = null;
 			
 			
