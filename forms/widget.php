@@ -175,6 +175,19 @@ class acf_controller_widget {
 <script type="text/javascript">
 (function($) {
 	
+	 acf.add_filter('is_field_ready_for_js', function( ready, $field ){
+	 	
+		// widget
+		if( $field.parents('#available-widgets').exists() )
+		{
+			ready = false;
+		}
+		
+		// return
+		return ready;
+	    
+    });
+		
 	acf.add_action('ready', function(){
 		
 		$('#widgets-right').on('click', '.widget-control-save', function( e ){

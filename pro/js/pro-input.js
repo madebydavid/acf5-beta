@@ -22,9 +22,41 @@
 				
 			});
 			
+			acf.add_filter('is_field_ready_for_js', function( ready, $field ){
+				
+				return self.is_field_ready_for_js( ready, $field );
+			    
+		    });
 			
 			return this;
 			
+		},
+		
+		is_field_ready_for_js : function( ready, $field ){
+			
+			// debug
+			//console.log('is_field_ready_for_js %o, %b', $field, ready);
+			
+			
+			// repeater sub field
+			if( $field.closest('.acf-row.clone').exists() ) {
+			
+				ready = false;
+				
+			}
+			
+			
+			// flexible content sub field
+			if( $field.closest('.acf-flexible-content > .clones').exists() ) {
+			
+				ready = false;
+				
+			}
+			
+			
+			// return
+			return ready;
+		
 		},
 		
 		conditional_logic_show_field : function( $field ){

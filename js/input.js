@@ -1092,39 +1092,6 @@ get_field_data : function( $el, name ){
 		
 	});
     
-    
-    acf.add_filter('is_field_ready_for_js', function( ready, $field ){
-		
-		// repeater sub field
-		if( $field.parents('.acf-row.clone').exists() )
-		{
-			ready = false;
-		}
-		
-		
-		// flexible content sub field
-		if( $field.parents('.acf-flexible-content > .clones').exists() )
-		{
-			ready = false;
-		}
-		
-		
-		// widget
-		if( $field.parents('#available-widgets').exists() )
-		{
-			ready = false;
-		}
-		
-		
-		// debug
-		//console.log('is_field_ready_for_js %o, %b', $field, ready);
-		
-		
-		// return
-		return ready;
-	    
-    });
-	
 	
 	/*
 	*  Exists
