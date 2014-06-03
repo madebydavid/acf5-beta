@@ -190,7 +190,7 @@ class acf_field_taxonomy extends acf_field
 		
 		// filters
 		$title = apply_filters('acf/fields/taxonomy/result', $title, $term, $field, $post_id);
-		$title = apply_filters('acf/fields/taxonomy/result/name=' . $field['name'] , $title, $term, $field, $post_id);
+		$title = apply_filters('acf/fields/taxonomy/result/name=' . $field['_name'] , $title, $term, $field, $post_id);
 		$title = apply_filters('acf/fields/taxonomy/result/key=' . $field['key'], $title, $term, $field, $post_id);
 		
 		
