@@ -52,7 +52,7 @@ if( $ofgs ){ foreach( $ofgs as $ofg ){
 			
 			
 			// add parent
-			//$field['field_group'] = $nfg['ID'];
+			$field['parent'] = $nfg['ID'];
 			
 			
 			// migrate field
