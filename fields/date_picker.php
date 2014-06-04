@@ -1,19 +1,36 @@
 <?php
 
-class acf_field_date_picker extends acf_field
-{
+/*
+*  ACF Date Picker Field Class
+*
+*  All the logic for this field type
+*
+*  @class 		acf_field_date_picker
+*  @extends		acf_field
+*  @package		ACF
+*  @subpackage	Fields
+*/
+
+if( ! class_exists('acf_field_date_picker') ) :
+
+class acf_field_date_picker extends acf_field {
+	
 	
 	/*
 	*  __construct
 	*
-	*  Set name / label needed for actions / filters
+	*  This function will setup the field type data
 	*
-	*  @since	3.6
-	*  @date	23/01/13
+	*  @type	function
+	*  @date	5/03/2014
+	*  @since	5.0.0
+	*
+	*  @param	n/a
+	*  @return	n/a
 	*/
 	
-	function __construct()
-	{
+	function __construct() {
+		
 		// vars
 		$this->name = 'date_picker';
 		$this->label = __("Date Picker",'acf');
@@ -43,12 +60,12 @@ class acf_field_date_picker extends acf_field
 	*  @type	action (init)
 	*  @date	3/09/13
 	*
-	*  @param	N/A
-	*  @return	N/A
+	*  @param	n/a
+	*  @return	n/a
 	*/
 	
-	function init()
-	{
+	function init() {
+		
 		global $wp_locale;
 		
 		$this->l10n = array(
@@ -62,6 +79,7 @@ class acf_field_date_picker extends acf_field
 	        'dayNamesMin'       => array_values( $wp_locale->weekday_initial ),
 	        'isRTL'             => isset($wp_locale->is_rtl) ? $wp_locale->is_rtl : false,
 		);
+		
 	}
 	
 	
@@ -122,9 +140,10 @@ class acf_field_date_picker extends acf_field
 		);
 		
 		
-		foreach( $php_to_js as $php => $js )
-		{
+		foreach( $php_to_js as $php => $js ) {
+			
 			$el_atts['data-display_format'] = str_replace($php, $js, $el_atts['data-display_format']);
+			
 		}
 		
 
@@ -153,8 +172,8 @@ class acf_field_date_picker extends acf_field
 	*  @param	$field	- an array holding all the field's data
 	*/
 	
-	function render_field_settings( $field )
-	{
+	function render_field_settings( $field ) {
+		
 		// global
 		global $wp_locale;
 		
@@ -199,7 +218,6 @@ class acf_field_date_picker extends acf_field
 			'choices'		=> array_values( $wp_locale->weekday )
 		));
 		
-		
 	}
 	
 	
@@ -223,16 +241,18 @@ class acf_field_date_picker extends acf_field
 	function format_value( $value, $post_id, $field, $template ) {
 		
 		// bail early if no value
-		if( empty($value) )
-		{
+		if( empty($value) ) {
+			
 			return $value;
+			
 		}
 		
 		
 		// bail early if not formatting for template use
-		if( !$template )
-		{
+		if( !$template ) {
+			
 			return $value;
+			
 		}
 		
 		
@@ -258,5 +278,7 @@ class acf_field_date_picker extends acf_field
 }
 
 new acf_field_date_picker();
+
+endif;
 
 ?>

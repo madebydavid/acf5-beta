@@ -1,15 +1,32 @@
 <?php
 
-class acf_field_file extends acf_field
-{
+/*
+*  ACF File Field Class
+*
+*  All the logic for this field type
+*
+*  @class 		acf_field_file
+*  @extends		acf_field
+*  @package		ACF
+*  @subpackage	Fields
+*/
+
+if( ! class_exists('acf_field_file') ) :
+
+class acf_field_file extends acf_field {
+	
 	
 	/*
 	*  __construct
 	*
-	*  Set name / label needed for actions / filters
+	*  This function will setup the field type data
 	*
-	*  @since	3.6
-	*  @date	23/01/13
+	*  @type	function
+	*  @date	5/03/2014
+	*  @since	5.0.0
+	*
+	*  @param	n/a
+	*  @return	n/a
 	*/
 	
 	function __construct() {
@@ -19,60 +36,25 @@ class acf_field_file extends acf_field
 		$this->label = __("File",'acf');
 		$this->category = 'content';
 		$this->defaults = array(
-			'return_format'	=>	'array',
-			'library' 		=>	'all'
+			'return_format'	=> 'array',
+			'library' 		=> 'all'
 		);
 		$this->l10n = array(
-			'select'		=>	__("Select File",'acf'),
-			'edit'			=>	__("Edit File",'acf'),
-			'update'		=>	__("Update File",'acf'),
-			'uploadedTo'	=>	__("uploaded to this post",'acf'),
+			'select'		=> __("Select File",'acf'),
+			'edit'			=> __("Edit File",'acf'),
+			'update'		=> __("Update File",'acf'),
+			'uploadedTo'	=> __("uploaded to this post",'acf'),
 		);
+		
+		
+		// filters
+		add_filter('get_media_item_args',			array($this, 'get_media_item_args'));
+		add_filter('wp_prepare_attachment_for_js',	array($this, 'wp_prepare_attachment_for_js'), 10, 3);
 		
 		
 		// do not delete!
     	parent::__construct();
     	
-    	
-    	// filters
-		add_filter('get_media_item_args', array($this, 'get_media_item_args'));
-		add_filter('wp_prepare_attachment_for_js', array($this, 'wp_prepare_attachment_for_js'), 10, 3);
-	}
-	
-	
-	/*
-	*  load_field()
-	*
-	*  This filter is applied to the $field after it is loaded from the database
-	*
-	*  @type	filter
-	*  @date	23/01/2013
-	*  @since	3.6.0	
-	*
-	*  @param	$field (array) the field array holding all the field options
-	*  @return	$field
-	*/
-	
-	function load_field( $field ) {
-		
-		// v4 to v5 compatibility
-		if( !empty($field['save_format']) ) {
-			
-			$field['return_format'] = acf_extract_var( $field, 'save_format' );
-			
-		}
-		
-		
-		if( $field['return_format'] == 'object' ) {
-			
-			$field['return_format'] = 'array';
-			
-		}
-		
-		
-		// return
-		return $field;
-		
 	}
 	
 	
@@ -88,28 +70,28 @@ class acf_field_file extends acf_field
 	*  @date	23/01/13
 	*/
 	
-	function render_field( $field )
-	{
+	function render_field( $field ) {
+		
 		// enqueue
 		acf_enqueue_uploader();
 		
 		
 		// vars
 		$o = array(
-			'class'		=>	'acf-file-uploader acf-cf',
-			'icon'		=>	'',
-			'title'		=>	'',
-			'size'		=>	'',
-			'url'		=>	'',
-			'name'		=>	'',
+			'class'		=> 'acf-file-uploader acf-cf',
+			'icon'		=> '',
+			'title'		=> '',
+			'size'		=> '',
+			'url'		=> '',
+			'name'		=> '',
 		);
 		
-		if( $field['value'] && is_numeric($field['value']) )
-		{
+		if( $field['value'] && is_numeric($field['value']) ) {
+			
 			$file = get_post( $field['value'] );
 			
-			if( $file )
-			{
+			if( $file ) {
+				
 				$o['class'] .= ' has-value';
 				$o['icon'] = wp_mime_type_icon( $file->ID );
 				$o['title']	= $file->post_title;
@@ -117,12 +99,13 @@ class acf_field_file extends acf_field
 				$o['url'] = wp_get_attachment_url( $file->ID );
 				
 				$explode = explode('/', $o['url']);
-				$o['name'] = end( $explode );				
+				$o['name'] = end( $explode );	
+							
 			}
+			
 		}
 		
-		
-		?>
+?>
 <div <?php acf_esc_attr_e(array( 'class' => $o['class'], 'data-library' => $field['library'] )); ?>>
 	<div class="acf-hidden">
 		<input type="hidden" <?php acf_esc_attr_e(array( 'name' => $field['name'], 'value' => $field['value'], 'data-name' => 'id' )); ?> />	
@@ -159,7 +142,8 @@ class acf_field_file extends acf_field
 		<p><?php _e('No File selected','acf'); ?> <a data-name="add-button" class="acf-button" href="#"><?php _e('Add File','acf'); ?></a></p>
 	</div>
 </div>
-		<?php
+<?php
+		
 	}
 	
 	
@@ -176,8 +160,8 @@ class acf_field_file extends acf_field
 	*  @param	$field	- an array holding all the field's data
 	*/
 	
-	function render_field_settings( $field )
-	{
+	function render_field_settings( $field ) {
+		
 		// return_format
 		acf_render_field_setting( $field, array(
 			'label'			=> __('Return Value','acf'),
@@ -229,9 +213,10 @@ class acf_field_file extends acf_field
 	function format_value( $value, $post_id, $field, $template ) {
 		
 		// bail early if no value
-		if( empty($value) )
-		{
+		if( empty($value) ) {
+		
 			return $value;
+			
 		}
 		
 		
@@ -241,19 +226,20 @@ class acf_field_file extends acf_field
 		
 		
 		// bail early if not formatting for template use
-		if( !$template )
-		{
+		if( !$template ) {
+		
 			return $value;
+			
 		}
 		
 		
 		// format
-		if( $field['return_format'] == 'url' )
-		{
+		if( $field['return_format'] == 'url' ) {
+		
 			$value = wp_get_attachment_url($value);
-		}
-		elseif( $field['return_format'] == 'array' )
-		{
+			
+		} elseif( $field['return_format'] == 'array' ) {
+			
 			$attachment = get_post( $value );
 			
 			
@@ -285,72 +271,23 @@ class acf_field_file extends acf_field
 	/*
 	*  get_media_item_args
 	*
-	*  @description: 
-	*  @since: 3.6
-	*  @created: 27/01/13
+	*  description
+	*
+	*  @type	function
+	*  @date	27/01/13
+	*  @since	3.6.0
+	*
+	*  @param	$vars (array)
+	*  @return	$vars
 	*/
 	
-	function get_media_item_args( $vars )
-	{
+	function get_media_item_args( $vars ) {
+	
 	    $vars['send'] = true;
 	    return($vars);
+	    
 	}
-		
-	
-	/*
-   	*  ajax_get_files
-   	*
-   	*  @description: 
-   	*  @since: 3.5.7
-   	*  @created: 13/01/13
-   	*/
-	
-   	function ajax_get_files()
-   	{
-   		// vars
-		$options = array(
-			'nonce' => '',
-			'files' => array()
-		);
-		$return = array();
-		
-		
-		// load post options
-		$options = array_merge($options, $_POST);
-		
-		
-		// verify nonce
-		if( ! wp_verify_nonce($options['nonce'], 'acf_nonce') )
-		{
-			die(0);
-		}
-		
-		
-		if( $options['files'] )
-		{
-			foreach( $options['files'] as $id )
-			{
-				$o = array();
-				$file = get_post( $id );
-					
-				$o['id'] = $file->ID;
-				$o['icon'] = wp_mime_type_icon( $file->ID );
-				$o['title']	= $file->post_title;
-				$o['size'] = size_format(filesize( get_attached_file( $file->ID ) ));
-				$o['url'] = wp_get_attachment_url( $file->ID );
-				$o['name'] = end(explode('/', $o['url']));				
-				
-				$return[] = $o;
-			}
-		}
-		
-		
-		// return json
-		echo json_encode( $return );
-		die;
-		
-   	}
-   	
+	   	
 	
 	/*
 	*  update_value()
@@ -368,20 +305,25 @@ class acf_field_file extends acf_field
 	*  @return	$value - the modified value
 	*/
 	
-	function update_value( $value, $post_id, $field )
-	{
+	function update_value( $value, $post_id, $field ) {
+		
 		// array?
-		if( is_array($value) && isset($value['id']) )
-		{
+		if( is_array($value) && isset($value['id']) ) {
+		
 			$value = $value['id'];	
+			
 		}
+		
 		
 		// object?
-		if( is_object($value) && isset($value->ID) )
-		{
+		if( is_object($value) && isset($value->ID) ) {
+		
 			$value = $value->ID;
+			
 		}
 		
+		
+		// return
 		return $value;
 	}
 	
@@ -398,16 +340,17 @@ class acf_field_file extends acf_field
 	*  @return	{int}	$post_id
 	*/
 	
-	function wp_prepare_attachment_for_js( $response, $attachment, $meta )
-	{
+	function wp_prepare_attachment_for_js( $response, $attachment, $meta ) {
+		
 		// default
 		$fs = '0 kb';
 		
 		
 		// supress PHP warnings caused by corrupt images
-		if( $i = @filesize( get_attached_file( $attachment->ID ) ) )
-		{
+		if( $i = @filesize( get_attached_file( $attachment->ID ) ) ) {
+		
 			$fs = size_format( $i );
+			
 		}
 		
 		
@@ -417,10 +360,13 @@ class acf_field_file extends acf_field
 		
 		// return
 		return $response;
+		
 	}
 	
 }
 
 new acf_field_file();
+
+endif;
 
 ?>
