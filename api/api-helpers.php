@@ -1855,15 +1855,15 @@ function acf_get_updates() {
 
 function acf_encode_choices( $array = array() ) {
 	
+	// vars
+	$string = '';
+	
+	
 	// bail ealry if not array
 	if( !is_array($array) ) {
 		
-		return $array;
+		return $string;
 	}
-	
-	
-	// vars
-	$string = '';
 	
 	
 	if( !empty($array) ) {
@@ -1890,15 +1890,15 @@ function acf_encode_choices( $array = array() ) {
 
 function acf_decode_choices( $string = '' ) {
 	
+	// vars
+	$array = array();
+	
+	
 	// bail ealry if not string
 	if( !is_string($string) ) {
 		
-		return $string;
+		return $array;
 	}
-	
-	
-	// vars
-	$array = array();
 	
 	
 	// explode choices from each line
