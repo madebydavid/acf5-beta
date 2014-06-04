@@ -1,18 +1,36 @@
 <?php
 
-class acf_field_google_map extends acf_field
-{
+/*
+*  ACF Google Map Field Class
+*
+*  All the logic for this field type
+*
+*  @class 		acf_field_google_map
+*  @extends		acf_field
+*  @package		ACF
+*  @subpackage	Fields
+*/
+
+if( ! class_exists('acf_field_google_map') ) :
+
+class acf_field_google_map extends acf_field {
+	
+	
 	/*
 	*  __construct
 	*
-	*  Set name / label needed for actions / filters
+	*  This function will setup the field type data
 	*
-	*  @since	3.6
-	*  @date	23/01/13
+	*  @type	function
+	*  @date	5/03/2014
+	*  @since	5.0.0
+	*
+	*  @param	n/a
+	*  @return	n/a
 	*/
 	
-	function __construct()
-	{
+	function __construct() {
+		
 		// vars
 		$this->name = 'google_map';
 		$this->label = __("Google Map",'acf');
@@ -30,8 +48,8 @@ class acf_field_google_map extends acf_field
 			'zoom'			=> '14'
 		);
 		$this->l10n = array(
-			'locating'			=>	__("Locating",'acf'),
-			'browser_support'	=>	__("Sorry, this browser does not support geolocation",'acf'),
+			'locating'			=> __("Locating",'acf'),
+			'browser_support'	=> __("Sorry, this browser does not support geolocation",'acf'),
 		);
 		
 		
@@ -52,10 +70,7 @@ class acf_field_google_map extends acf_field
 	*  @date	23/01/13
 	*/
 	
-	function render_field( $field )
-	{
-		// require the googlemaps JS ( this script is now lazy loaded via JS )
-		//wp_enqueue_script('acf-googlemaps');
+	function render_field( $field ) {
 		
 		// validate value
 		if( empty($field['value']) ) {
@@ -74,12 +89,14 @@ class acf_field_google_map extends acf_field
 		
 		
 		// default options
-		foreach( $this->default_values as $k => $v )
-		{
-			if( empty($field[ $k ]) )
-			{
+		foreach( $this->default_values as $k => $v ) {
+		
+			if( empty($field[ $k ]) ) {
+			
 				$field[ $k ] = $v;
-			}	
+				
+			}
+				
 		}
 		
 		
@@ -97,49 +114,50 @@ class acf_field_google_map extends acf_field
 		// modify atts
 		$atts['class'] .= ' acf-google-map';
 		
-		if( $field['value']['address'] )
-		{
+		if( $field['value']['address'] ) {
+		
 			$atts['class'] .= ' active';
+			
 		}
 		
 		
-		?>
-		<div <?php acf_esc_attr_e($atts); ?>>
-			
-			<div class="acf-hidden">
-				<?php foreach( $field['value'] as $k => $v ): ?>
-					<input type="hidden" class="input-<?php echo $k; ?>" name="<?php echo esc_attr($field['name']); ?>[<?php echo $k; ?>]" value="<?php echo esc_attr( $v ); ?>" />
-				<?php endforeach; ?>
-			</div>
-			
-			<div class="title acf-soh">
-				
-				<div class="has-value">
-					<a href="#" class="acf-icon light acf-soh-target" title="<?php _e("Clear location", 'acf'); ?>">
-						<i class="acf-sprite-delete"></i>
-					</a>
-					<h4><?php echo $field['value']['address']; ?></h4>
-				</div>
-				
-				<div class="no-value">
-					<a href="#" class="acf-icon light acf-soh-target" title="<?php _e("Find current location", 'acf'); ?>">
-						<i class="acf-sprite-locate"></i>
-					</a>
-					<input type="text" placeholder="<?php _e("Search for address...",'acf'); ?>" class="search" />
-				</div>
-				
-			</div>
-			
-			<div class="canvas" style="height: <?php echo $field['height']; ?>px">
-				
-			</div>
-			
+?>
+<div <?php acf_esc_attr_e($atts); ?>>
+	
+	<div class="acf-hidden">
+		<?php foreach( $field['value'] as $k => $v ): ?>
+			<input type="hidden" class="input-<?php echo $k; ?>" name="<?php echo esc_attr($field['name']); ?>[<?php echo $k; ?>]" value="<?php echo esc_attr( $v ); ?>" />
+		<?php endforeach; ?>
+	</div>
+	
+	<div class="title acf-soh">
+		
+		<div class="has-value">
+			<a href="#" class="acf-icon light acf-soh-target" title="<?php _e("Clear location", 'acf'); ?>">
+				<i class="acf-sprite-delete"></i>
+			</a>
+			<h4><?php echo $field['value']['address']; ?></h4>
 		</div>
-		<?php
+		
+		<div class="no-value">
+			<a href="#" class="acf-icon light acf-soh-target" title="<?php _e("Find current location", 'acf'); ?>">
+				<i class="acf-sprite-locate"></i>
+			</a>
+			<input type="text" placeholder="<?php _e("Search for address...",'acf'); ?>" class="search" />
+		</div>
+		
+	</div>
+	
+	<div class="canvas" style="height: <?php echo $field['height']; ?>px">
+		
+	</div>
+	
+</div>
+<?php
+		
 	}
 	
-	
-	
+		
 	/*
 	*  render_field_settings()
 	*
@@ -154,7 +172,6 @@ class acf_field_google_map extends acf_field
 	*/
 	
 	function render_field_settings( $field ) {
-		
 		
 		// center_lat
 		acf_render_field_setting( $field, array(
@@ -231,5 +248,7 @@ class acf_field_google_map extends acf_field
 }
 
 new acf_field_google_map();
+
+endif;
 
 ?>

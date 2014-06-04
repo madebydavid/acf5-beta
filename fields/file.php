@@ -252,7 +252,7 @@ class acf_field_file extends acf_field {
 			
 			// create array to hold value data
 			$value = array(
-				'id'			=> $attachment->ID,
+				'ID'			=> $attachment->ID,
 				'alt'			=> get_post_meta($attachment->ID, '_wp_attachment_image_alt', true),
 				'title'			=> $attachment->post_title,
 				'caption'		=> $attachment->post_excerpt,
@@ -308,9 +308,9 @@ class acf_field_file extends acf_field {
 	function update_value( $value, $post_id, $field ) {
 		
 		// array?
-		if( is_array($value) && isset($value['id']) ) {
+		if( is_array($value) && isset($value['ID']) ) {
 		
-			$value = $value['id'];	
+			$value = $value['ID'];	
 			
 		}
 		

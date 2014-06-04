@@ -1,14 +1,32 @@
 <?php
 
+/*
+*  ACF Image Field Class
+*
+*  All the logic for this field type
+*
+*  @class 		acf_field_image
+*  @extends		acf_field
+*  @package		ACF
+*  @subpackage	Fields
+*/
+
+if( ! class_exists('acf_field_image') ) :
+
 class acf_field_image extends acf_field {
+	
 	
 	/*
 	*  __construct
 	*
-	*  Set name / label needed for actions / filters
+	*  This function will setup the field type data
 	*
-	*  @since	3.6
-	*  @date	23/01/13
+	*  @type	function
+	*  @date	5/03/2014
+	*  @since	5.0.0
+	*
+	*  @param	n/a
+	*  @return	n/a
 	*/
 	
 	function __construct() {
@@ -18,64 +36,28 @@ class acf_field_image extends acf_field {
 		$this->label = __("Image",'acf');
 		$this->category = 'content';
 		$this->defaults = array(
-			'return_format'	=>	'array',
-			'preview_size'	=>	'thumbnail',
-			'library'		=>	'all'
+			'return_format'	=> 'array',
+			'preview_size'	=> 'thumbnail',
+			'library'		=> 'all'
 		);
 		$this->l10n = array(
-			'select'		=>	__("Select Image",'acf'),
-			'edit'			=>	__("Edit Image",'acf'),
-			'update'		=>	__("Update Image",'acf'),
-			'uploadedTo'	=>	__("uploaded to this post",'acf'),
+			'select'		=> __("Select Image",'acf'),
+			'edit'			=> __("Edit Image",'acf'),
+			'update'		=> __("Update Image",'acf'),
+			'uploadedTo'	=> __("uploaded to this post",'acf'),
 		);
+		
+		
+		// filters
+		add_filter('get_media_item_args',			array($this, 'get_media_item_args'));
+		add_filter('wp_prepare_attachment_for_js',	array($this, 'wp_prepare_attachment_for_js'), 10, 3);
 		
 		
 		// do not delete!
     	parent::__construct();
-    	
-    	
-		// filters
-		add_filter('get_media_item_args', array($this, 'get_media_item_args'));
-		add_filter('wp_prepare_attachment_for_js', array($this, 'wp_prepare_attachment_for_js'), 10, 3);
-		
-	}
-	
-	
-	/*
-	*  load_field()
-	*
-	*  This filter is applied to the $field after it is loaded from the database
-	*
-	*  @type	filter
-	*  @date	23/01/2013
-	*  @since	3.6.0	
-	*
-	*  @param	$field (array) the field array holding all the field options
-	*  @return	$field
-	*/
-	
-	function load_field( $field ) {
-		
-		// v4 to v5 compatibility
-		if( !empty($field['save_format']) ) {
-			
-			$field['return_format'] = acf_extract_var( $field, 'save_format' );
-			
-		}
-		
-		
-		if( $field['return_format'] == 'object' ) {
-			
-			$field['return_format'] = 'array';
-			
-		}
-		
-		
-		// return
-		return $field;
-		
-	}
-	
+    
+    }
+    
 	
 	/*
 	*  render_field()
@@ -89,8 +71,8 @@ class acf_field_image extends acf_field {
 	*  @date	23/01/13
 	*/
 	
-	function render_field( $field )
-	{
+	function render_field( $field ) {
+		
 		// enqueue
 		acf_enqueue_uploader();
 		
@@ -111,15 +93,16 @@ class acf_field_image extends acf_field {
 		
 		
 		// has value?
-		if( $field['value'] && is_numeric($field['value']) )
-		{
+		if( $field['value'] && is_numeric($field['value']) ) {
+			
 			$url = wp_get_attachment_image_src($field['value'], $field['preview_size']);
 			$url = $url[0];
 			
 			$div_atts['class'] .= ' has-value';
+			
 		}
 		
-		?>
+?>
 <div <?php acf_esc_attr_e( $div_atts ); ?>>
 	<div class="acf-hidden">
 		<input <?php acf_esc_attr_e( $input_atts ); ?>/>
@@ -135,7 +118,8 @@ class acf_field_image extends acf_field {
 		<p><?php _e('No image selected','acf'); ?> <a data-name="add-button" class="acf-button" href="#"><?php _e('Add Image','acf'); ?></a></p>
 	</div>
 </div>
-		<?php
+<?php
+		
 	}
 	
 	
@@ -215,33 +199,36 @@ class acf_field_image extends acf_field {
 	function format_value( $value, $post_id, $field, $template ) {
 		
 		// bail early if no value
-		if( empty($value) )
-		{
+		if( empty($value) ) {
+		
 			return $value;
+			
 		}
 		
 		
 		// bail early if not formatting for template use
-		if( !$template )
-		{
+		if( !$template ) {
+		
 			return $value;
+			
 		}
 		
 		
 		// format
-		if( $field['return_format'] == 'url' )
-		{
+		if( $field['return_format'] == 'url' ) {
+		
 			$value = wp_get_attachment_url( $value );
-		}
-		elseif( $field['return_format'] == 'array' )
-		{
+			
+		} elseif( $field['return_format'] == 'array' ) {
+			
 			$attachment = get_post( $value );
 			
 			
 			// validate
-			if( !$attachment )
-			{
-				return false;	
+			if( !$attachment ) {
+			
+				return false;
+					
 			}
 			
 			
@@ -263,12 +250,12 @@ class acf_field_image extends acf_field {
 			// find all image sizes
 			$image_sizes = get_intermediate_image_sizes();
 			
-			if( $image_sizes )
-			{
+			if( $image_sizes ) {
+				
 				$value['sizes'] = array();
 				
-				foreach( $image_sizes as $image_size )
-				{
+				foreach( $image_sizes as $image_size ) {
+					
 					// find src
 					$src = wp_get_attachment_image_src( $attachment->ID, $image_size );
 					
@@ -276,8 +263,10 @@ class acf_field_image extends acf_field {
 					$value['sizes'][ $image_size ] = $src[0];
 					$value['sizes'][ $image_size . '-width' ] = $src[1];
 					$value['sizes'][ $image_size . '-height' ] = $src[2];
+					
 				}
 				// foreach( $image_sizes as $image_size )
+				
 			}
 			// if( $image_sizes )
 			
@@ -291,15 +280,21 @@ class acf_field_image extends acf_field {
 	/*
 	*  get_media_item_args
 	*
-	*  @description: 
-	*  @since: 3.6
-	*  @created: 27/01/13
+	*  description
+	*
+	*  @type	function
+	*  @date	27/01/13
+	*  @since	3.6.0
+	*
+	*  @param	$vars (array)
+	*  @return	$vars
 	*/
 	
-	function get_media_item_args( $vars )
-	{
+	function get_media_item_args( $vars ) {
+	
 	    $vars['send'] = true;
 	    return($vars);
+	    
 	}
 	
 	
@@ -311,7 +306,8 @@ class acf_field_image extends acf_field {
 	*  @created: 13/01/13
 	*/
 	
-	function image_size_names_choose( $sizes )
+	/*
+function image_size_names_choose( $sizes )
 	{
 		global $_wp_additional_image_sizes;
 			
@@ -331,49 +327,62 @@ class acf_field_image extends acf_field {
 		
         return $sizes;
 	}
+*/
 	
 	
 	/*
 	*  wp_prepare_attachment_for_js
 	*
-	*  @description: This sneaky hook adds the missing sizes to each attachment in the 3.5 uploader. It would be a lot easier to add all the sizes to the 'image_size_names_choose' filter but then it will show up on the normal the_content editor
-	*  @since: 3.5.7
-	*  @created: 13/01/13
+	*  this filter allows ACF to add in extra data to an attachment JS object
+	*  This sneaky hook adds the missing sizes to each attachment in the 3.5 uploader. 
+	*  It would be a lot easier to add all the sizes to the 'image_size_names_choose' filter but 
+	*  then it will show up on the normal the_content editor
+	*
+	*  @type	function
+	*  @since:	3.5.7
+	*  @date	13/01/13
+	*
+	*  @param	{int}	$post_id
+	*  @return	{int}	$post_id
 	*/
 	
-	function wp_prepare_attachment_for_js( $response, $attachment, $meta )
-	{
+	function wp_prepare_attachment_for_js( $response, $attachment, $meta ) {
+		
 		// only for image
-		if( $response['type'] != 'image' )
-		{
+		if( $response['type'] != 'image' ) {
+		
 			return $response;
+			
 		}
 		
 		
 		// make sure sizes exist. Perhaps they dont?
-		if( !isset($meta['sizes']) )
-		{
+		if( !isset($meta['sizes']) ) {
+		
 			return $response;
+			
 		}
 		
 		
 		$attachment_url = $response['url'];
 		$base_url = str_replace( wp_basename( $attachment_url ), '', $attachment_url );
 		
-		if( isset($meta['sizes']) && is_array($meta['sizes']) )
-		{
-			foreach( $meta['sizes'] as $k => $v )
-			{
-				if( !isset($response['sizes'][ $k ]) )
-				{
+		if( isset($meta['sizes']) && is_array($meta['sizes']) ) {
+		
+			foreach( $meta['sizes'] as $k => $v ) {
+			
+				if( !isset($response['sizes'][ $k ]) ) {
+				
 					$response['sizes'][ $k ] = array(
-						'height'      =>  $v['height'],
-						'width'       =>  $v['width'],
+						'height'      => $v['height'],
+						'width'       => $v['width'],
 						'url'         => $base_url .  $v['file'],
 						'orientation' => $v['height'] > $v['width'] ? 'portrait' : 'landscape',
 					);
 				}
+				
 			}
+			
 		}
 
 		return $response;
@@ -396,19 +405,23 @@ class acf_field_image extends acf_field {
 	*  @return	$value - the modified value
 	*/
 	
-	function update_value( $value, $post_id, $field )
-	{
+	function update_value( $value, $post_id, $field ) {
+		
 		// array?
-		if( is_array($value) && isset($value['ID']) )
-		{
+		if( is_array($value) && isset($value['ID']) ) {
+		
 			$value = $value['ID'];	
+			
 		}
 		
+		
 		// object?
-		if( is_object($value) && isset($value->ID) )
-		{
+		if( is_object($value) && isset($value->ID) ) {
+		
 			$value = $value->ID;
+			
 		}
+		
 		
 		// return
 		return $value;
@@ -418,5 +431,7 @@ class acf_field_image extends acf_field {
 }
 
 new acf_field_image();
+
+endif;
 
 ?>
