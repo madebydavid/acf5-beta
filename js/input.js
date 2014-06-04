@@ -2358,40 +2358,80 @@ get_field_data : function( $el, name ){
 			var values = [];
 			
 			
-			$('.categorychecklist input:checked, .acf-taxonomy-field input:checked, .acf-taxonomy-field option:selected').each(function(){
+			$('.categorychecklist, .acf-taxonomy-field').each(function(){
 				
-				// validate
-				if( $(this).is(':hidden') || $(this).is(':disabled') )
-				{
+				// vars
+				var $el = $(this),
+					$checkbox = $el.find('input[type="checkbox"]').not(':disabled'),
+					$radio = $el.find('input[type="radio"]').not(':disabled'),
+					$select = $el.find('select').not(':disabled'),
+					$hidden = $el.find('input[type="hidden"]').not(':disabled');
+				
+				
+				// bail early if not a field which saves taxonomy terms to post
+				if( $el.is('.acf-taxonomy-field') && $el.attr('data-load_save') != '1' ) {
+					
 					return;
+					
 				}
 				
 				
-				// validate media popup
-				if( $(this).closest('.media-frame').exists() )
-				{
+				// bail early if in attachment
+				if( $el.closest('.media-frame').exists() ) {
+					
 					return;
+				
 				}
 				
 				
-				// validate acf
-				if( $(this).closest('.acf-taxonomy-field').exists() )
-				{
-					if( $(this).closest('.acf-taxonomy-field').attr('data-save') == '0' )
-					{
-						return;
-					}
+				// checkbox
+				if( $checkbox.exists() ) {
+					
+					$checkbox.filter(':checked').each(function(){
+						
+						values.push( $(this).val() );
+						
+					});
+					
+				} else if( $radio.exists() ) {
+					
+					$radio.filter(':checked').each(function(){
+						
+						values.push( $(this).val() );
+						
+					});
+					
+				} else if( $select.exists() ) {
+					
+					$select.find('option:selected').each(function(){
+						
+						values.push( $(this).val() );
+						
+					});
+					
+				} else if( $hidden.exists() ) {
+					
+					$hidden.each(function(){
+						
+						// ignor blank values or those which contain a comma (select2 multi-select)
+						if( ! $(this).val() || $(this).val().indexOf(',') > -1 ) {
+							
+							return;
+							
+						}
+						
+						values.push( $(this).val() );
+						
+					});
+					
 				}
-				
-				
-				// append
-				if( values.indexOf( $(this).val() ) === -1 )
-				{
-					values.push( $(this).val() );
-				}
-				
+								
 			});
 	
+			
+			// filter duplicates
+			values = values.filter (function (v, i, a) { return a.indexOf (v) == i });
+			
 			
 			// update screen
 			this.update( 'post_taxonomy', values ).fetch();
@@ -2452,19 +2492,20 @@ get_field_data : function( $el, name ){
 				
 				// a taxonomy field may trigger this change event, however, the value selected is not
 				// actually a term relationship, it is meta data
-				if( $(this).closest('.acf-taxonomy-field').exists() )
-				{
-					if( $(this).closest('.acf-taxonomy-field').attr('data-save') == '0' )
-					{
-						return;
-					}
+				var $el = $(this).closest('.acf-taxonomy-field');
+				
+				if( $el.exists() && $el.attr('data-load_save') != '1' ) {
+					
+					return;
+					
 				}
 				
 				
 				// this may be triggered from editing an image in a popup. Popup does not support correct metaboxes so ignore this
-				if( $(this).closest('.media-frame').exists() )
-				{
+				if( $(this).closest('.media-frame').exists() ) {
+					
 					return;
+				
 				}
 				
 				
