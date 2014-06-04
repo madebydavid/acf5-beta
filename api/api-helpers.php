@@ -1841,6 +1841,102 @@ function acf_get_updates() {
 
 
 /*
+*  acf_encode_choices
+*
+*  description
+*
+*  @type	function
+*  @date	4/06/2014
+*  @since	5.0.0
+*
+*  @param	$post_id (int)
+*  @return	$post_id (int)
+*/
+
+function acf_encode_choices( $array = array() ) {
+	
+	// bail ealry if not array
+	if( !is_array($array) ) {
+		
+		return $array;
+	}
+	
+	
+	// vars
+	$string = '';
+	
+	
+	if( !empty($array) ) {
+		
+		foreach( $array as $k => $v ) { 
+			
+			if( $k !== $v ) {
+				
+				$array[ $k ] = $k . ' : ' . $v;
+				
+			}
+			
+		}
+		
+		$string = implode("\n", $array);
+		
+	}
+	
+	
+	// return
+	return $string;
+	
+}
+
+function acf_decode_choices( $string = '' ) {
+	
+	// bail ealry if not string
+	if( !is_string($string) ) {
+		
+		return $string;
+	}
+	
+	
+	// vars
+	$array = array();
+	
+	
+	// explode choices from each line
+	if( !empty($string) ) {
+		
+		// stripslashes ("")
+		$string = stripslashes_deep($string);
+		
+		
+		// explode
+		$temp = explode("\n", $string);
+		
+		
+		// key => value
+		foreach( $temp as $v ) {
+			
+			if( acf_str_exists(' : ', $v) ) {
+			
+				$v = explode(' : ', $v);
+				
+				$array[ trim($v[0]) ] = trim($v[1]);
+				
+			}
+			else
+			{
+				$array[ trim($v) ] = trim($v);
+			}
+		}
+	}
+	
+	
+	// return
+	return $array;
+	
+}
+
+
+/*
 *  Hacks
 *
 *  description

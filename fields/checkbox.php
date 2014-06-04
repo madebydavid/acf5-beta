@@ -1,19 +1,36 @@
 <?php
 
-class acf_field_checkbox extends acf_field
-{
+/*
+*  ACF Checkbox Field Class
+*
+*  All the logic for this field type
+*
+*  @class 		acf_field_checkbox
+*  @extends		acf_field
+*  @package		ACF
+*  @subpackage	Fields
+*/
 
+if( ! class_exists('acf_field_checkbox') ) :
+
+class acf_field_checkbox extends acf_field {
+	
+	
 	/*
 	*  __construct
 	*
-	*  Set name / label needed for actions / filters
+	*  This function will setup the field type data
 	*
-	*  @since	3.6
-	*  @date	23/01/13
+	*  @type	function
+	*  @date	5/03/2014
+	*  @since	5.0.0
+	*
+	*  @param	n/a
+	*  @return	n/a
 	*/
 	
-	function __construct()
-	{
+	function __construct() {
+		
 		// vars
 		$this->name = 'checkbox';
 		$this->label = __("Checkbox",'acf');
@@ -35,33 +52,20 @@ class acf_field_checkbox extends acf_field
 	*
 	*  Create the HTML interface for your field
 	*
-	*  @param	$field - an array holding all the field's data
+	*  @param	$field (array) the $field being rendered
 	*
 	*  @type	action
 	*  @since	3.6
 	*  @date	23/01/13
+	*
+	*  @param	$field (array) the $field being edited
+	*  @return	n/a
 	*/
 	
-	function render_field( $field )
-	{
-		// value must be array
-		if( !is_array($field['value']) )
-		{
-			// perhaps this is a default value with new lines in it?
-			if( strpos($field['value'], "\n") !== false )
-			{
-				// found multiple lines, explode it
-				$field['value'] = explode("\n", $field['value']);
-			}
-			else
-			{
-				$field['value'] = array( $field['value'] );
-			}
-		}
+	function render_field( $field ) {
 		
-		
-		// trim value
-		$field['value'] = array_map('trim', $field['value']);
+		// decode value (convert to array)
+		$field['value'] = acf_decode_choices($field['value']);
 		
 		
 		// hiden input
@@ -89,8 +93,8 @@ class acf_field_checkbox extends acf_field
 		
 		
 		// foreach choices
-		foreach( $field['choices'] as $value => $label )
-		{
+		foreach( $field['choices'] as $value => $label ) {
+			
 			// increase counter
 			$i++;
 			
@@ -104,20 +108,22 @@ class acf_field_checkbox extends acf_field
 			);
 			
 			
-			if( in_array($value, $field['value']) )
-			{
+			if( in_array($value, $field['value']) ) {
+				
 				$atts['checked'] = 'checked';
-			}
-			if( isset($field['disabled']) && in_array($value, $field['disabled']) )
-			{
+				
+			} if( isset($field['disabled']) && in_array($value, $field['disabled']) ) {
+			
 				$atts['disabled'] = 'true';
+				
 			}
 			
 			
 			// each checkbox ID is generated with the $key, however, the first checkbox must not use $key so that it matches the field's label for attribute
-			if( $i > 1 )
-			{
+			if( $i > 1 ) {
+			
 				$atts['id'] .= '-' . $value;
+				
 			}
 			
 			$e .= '<li><label><input ' . acf_esc_attr( $atts ) . '/>' . $label . '</label></li>';
@@ -144,26 +150,11 @@ class acf_field_checkbox extends acf_field
 	*  @param	$field	- an array holding all the field's data
 	*/
 	
-	function render_field_settings( $field )
-	{
-		// implode checkboxes so they work in a textarea
-		if( is_array($field['choices']) )
-		{		
-			foreach( $field['choices'] as $k => $v )
-			{
-				if( $k === $v )
-				{
-					$field['choices'][ $k ] = $v;
-				}
-				else
-				{
-					$field['choices'][ $k ] = $k . ' : ' . $v;
-				}
-				
-			}
-			$field['choices'] = implode("\n", $field['choices']);
-		}
+	function render_field_settings( $field ) {
 		
+		// encode choices (convert from array)
+		$field['choices'] = acf_encode_choices($field['choices']);
+				
 		
 		// choices
 		acf_render_field_setting( $field, array(
@@ -199,8 +190,36 @@ class acf_field_checkbox extends acf_field
 		
 	}
 	
+	
+	/*
+	*  update_field()
+	*
+	*  This filter is appied to the $field before it is saved to the database
+	*
+	*  @type	filter
+	*  @since	3.6
+	*  @date	23/01/13
+	*
+	*  @param	$field - the field array holding all the field options
+	*  @param	$post_id - the field group ID (post_type = acf)
+	*
+	*  @return	$field - the modified field
+	*/
+
+	function update_field( $field ) {
+		
+		// decode choices (convert to array)
+		$field['choices'] = acf_decode_choices($field['choices']);
+		
+		
+		// return
+		return $field;
+	}
+	
 }
 
 new acf_field_checkbox();
+
+endif;
 
 ?>
