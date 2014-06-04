@@ -34,10 +34,6 @@ class acf_field_select extends acf_field
     	parent::__construct();
     	
     	
-    	// extra
-		add_filter('acf/update_field/type=radio',					array($this, 'update_field'), 5, 1);
-		
-		
 		// ajax
 		add_action('wp_ajax_acf/fields/select/query',				array($this, 'ajax_query'));
 		add_action('wp_ajax_nopriv_acf/fields/select/query',		array($this, 'ajax_query'));

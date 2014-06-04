@@ -36,9 +36,9 @@ class acf_field_checkbox extends acf_field {
 		$this->label = __("Checkbox",'acf');
 		$this->category = 'choice';
 		$this->defaults = array(
-			'layout'		=>	'vertical',
-			'choices'		=>	array(),
-			'default_value'	=>	'',
+			'layout'		=> 'vertical',
+			'choices'		=> array(),
+			'default_value'	=> '',
 		);
 		
 		
@@ -93,40 +93,46 @@ class acf_field_checkbox extends acf_field {
 		
 		
 		// foreach choices
-		foreach( $field['choices'] as $value => $label ) {
+		if( !empty($field['choices']) ) {
 			
-			// increase counter
-			$i++;
-			
-			
-			// vars
-			$atts = array(
-				'type'	=> 'checkbox',
-				'id'	=> $field['id'], 
-				'name'	=> $field['name'],
-				'value'	=> $value,
-			);
-			
-			
-			if( in_array($value, $field['value']) ) {
+			foreach( $field['choices'] as $value => $label ) {
 				
-				$atts['checked'] = 'checked';
+				// increase counter
+				$i++;
 				
-			} if( isset($field['disabled']) && in_array($value, $field['disabled']) ) {
-			
-				$atts['disabled'] = 'true';
 				
+				// vars
+				$atts = array(
+					'type'	=> 'checkbox',
+					'id'	=> $field['id'], 
+					'name'	=> $field['name'],
+					'value'	=> $value,
+				);
+				
+				
+				if( in_array($value, $field['value']) ) {
+					
+					$atts['checked'] = 'checked';
+					
+				}
+				
+				if( isset($field['disabled']) && in_array($value, $field['disabled']) ) {
+				
+					$atts['disabled'] = 'true';
+					
+				}
+				
+				
+				// each input ID is generated with the $key, however, the first input must not use $key so that it matches the field's label for attribute
+				if( $i > 1 ) {
+				
+					$atts['id'] .= '-' . $value;
+					
+				}
+				
+				$e .= '<li><label><input ' . acf_esc_attr( $atts ) . '/>' . $label . '</label></li>';
 			}
-			
-			
-			// each checkbox ID is generated with the $key, however, the first checkbox must not use $key so that it matches the field's label for attribute
-			if( $i > 1 ) {
-			
-				$atts['id'] .= '-' . $value;
-				
-			}
-			
-			$e .= '<li><label><input ' . acf_esc_attr( $atts ) . '/>' . $label . '</label></li>';
+		
 		}
 		
 		$e .= '</ul>';
