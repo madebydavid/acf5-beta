@@ -1,25 +1,42 @@
 <?php
 
-class acf_field_message extends acf_field
-{
+/*
+*  ACF Message Field Class
+*
+*  All the logic for this field type
+*
+*  @class 		acf_field_message
+*  @extends		acf_field
+*  @package		ACF
+*  @subpackage	Fields
+*/
+
+if( ! class_exists('acf_field_message') ) :
+
+class acf_field_message extends acf_field {
+	
 	
 	/*
 	*  __construct
 	*
-	*  Set name / label needed for actions / filters
+	*  This function will setup the field type data
 	*
-	*  @since	3.6
-	*  @date	23/01/13
+	*  @type	function
+	*  @date	5/03/2014
+	*  @since	5.0.0
+	*
+	*  @param	n/a
+	*  @return	n/a
 	*/
 	
-	function __construct()
-	{
+	function __construct() {
+		
 		// vars
 		$this->name = 'message';
 		$this->label = __("Message",'acf');
 		$this->category = 'layout';
 		$this->defaults = array(
-			'message'	=>	'',
+			'message'	=> '',
 		);
 		
 		
@@ -40,9 +57,10 @@ class acf_field_message extends acf_field
 	*  @date	23/01/13
 	*/
 	
-	function render_field( $field )
-	{
+	function render_field( $field ) {
+	
 		echo wpautop( $field['message'] );
+		
 	}
 	
 	
@@ -64,8 +82,7 @@ class acf_field_message extends acf_field
 		// default_value
 		acf_render_field_setting( $field, array(
 			'label'			=> __('Message','acf'),
-			'instructions'	=> __('Please note that all text will first be passed through the wp function ','acf') . 
-							   '<a href="http://codex.wordpress.org/Function_Reference/wpautop" target="_blank">wpautop()</a>',
+			'instructions'	=> __('Please note that all text will first be passed through the wp function ','acf') . '<a href="http://codex.wordpress.org/Function_Reference/wpautop" target="_blank">wpautop()</a>',
 			'type'			=> 'textarea',
 			'name'			=> 'message',
 		));
@@ -75,5 +92,7 @@ class acf_field_message extends acf_field
 }
 
 new acf_field_message();
+
+endif;
 
 ?>
