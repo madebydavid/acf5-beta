@@ -13,7 +13,9 @@ Domain Path: /lang
 
 // Current with acf v4 as of 27th Feb 1dde13a0bb8af763ef086f2ca0be4553ac955346
 
-if( !class_exists('acf') ):
+if( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+
+if( ! class_exists('acf') ) :
 
 class acf {
 	
@@ -183,9 +185,10 @@ class acf {
 	function wp_plugins_loaded() {
 		
 		// wpml
-		if( defined('ICL_SITEPRESS_VERSION') )
-		{
+		if( defined('ICL_SITEPRESS_VERSION') ) {
+		
 			acf_include('core/wpml.php');
+			
 		}
 		
 	}
@@ -248,16 +251,18 @@ class acf {
 	function complete() {
 		
 		// bail early if actions have not passed 'setup_theme'
-		if( ! acf_get_setting('setup_theme') )
-		{
+		if( ! acf_get_setting('setup_theme') ) {
+		
 			return;
+			
 		}
 		
 		
 		// once run once
-		if( acf_get_setting('complete') )
-		{
+		if( acf_get_setting('complete') ) {
+		
 			return;
+			
 		}
 		
 		
@@ -345,61 +350,74 @@ class acf {
 		
 		
 		// register scripts
-		$scripts = array();
-		$scripts[] = array(
-			'handle'	=> 'select2',
-			'src'		=> acf_get_dir( "inc/select2/select2{$min}.js" ),
-			'deps'		=> array('jquery'),
+		$scripts = array(
+			
+			array(
+				'handle'	=> 'select2',
+				'src'		=> acf_get_dir( "inc/select2/select2{$min}.js" ),
+				'deps'		=> array('jquery'),
+			),
+			
+			array(
+				'handle'	=> 'acf-input',
+				'src'		=> acf_get_dir( "js/input{$min}.js" ),
+				'deps'		=> array('jquery', 'jquery-ui-core', 'jquery-ui-datepicker', 'underscore', 'select2'),
+			),
+			
+			array(
+				'handle'	=> 'acf-field-group',
+				'src'		=> acf_get_dir( "js/field-group{$min}.js"),
+				'deps'		=> array('acf-input'),
+			)
+			
 		);
-		$scripts[] = array(
-			'handle'	=> 'acf-input',
-			'src'		=> acf_get_dir( "js/input{$min}.js" ),
-			'deps'		=> array('jquery', 'jquery-ui-core', 'jquery-ui-datepicker', 'underscore', 'select2'),
-		);
-		$scripts[] = array(
-			'handle'	=> 'acf-field-group',
-			'src'		=> acf_get_dir( "js/field-group{$min}.js"),
-			'deps'		=> array('acf-input'),
-		);
+				
+		foreach( $scripts as $script ) {
 		
-		foreach( $scripts as $script )
-		{
 			wp_register_script( $script['handle'], $script['src'], $script['deps'], acf_get_setting('version') );
+			
 		}
 		
 		
 		// register styles
-		$styles = array();
-		$styles[] = array(
-			'handle'	=> 'select2',
-			'src'		=> acf_get_dir( 'inc/select2/select2.css' ),
-			'deps'		=> array(),
-		);
-		$styles[] = array(
-			'handle'	=> 'acf-datepicker',
-			'src'		=> acf_get_dir( 'inc/datepicker/jquery-ui-1.10.4.custom.min.css' ),
-			'deps'		=> array(),
-		);
-		$styles[] = array(
-			'handle'	=> 'acf-global',
-			'src'		=> acf_get_dir( 'css/global.css' ),
-			'deps'		=> array(),
-		);
-		$styles[] = array(
-			'handle'	=> 'acf-field-group',
-			'src'		=> acf_get_dir( 'css/field-group.css' ),
-			'deps'		=> array(),
-		);
-		$styles[] = array(
-			'handle'	=> 'acf-input',
-			'src'		=> acf_get_dir( 'css/input.css' ),
-			'deps'		=> array('acf-datepicker', 'select2'),
-		);
+		$styles = array(
+			
+			array(
+				'handle'	=> 'select2',
+				'src'		=> acf_get_dir( 'inc/select2/select2.css' ),
+				'deps'		=> array(),
+			),
+			
+			array(
+				'handle'	=> 'acf-datepicker',
+				'src'		=> acf_get_dir( 'inc/datepicker/jquery-ui-1.10.4.custom.min.css' ),
+				'deps'		=> array(),
+			),
+			
+			array(
+				'handle'	=> 'acf-global',
+				'src'		=> acf_get_dir( 'css/global.css' ),
+				'deps'		=> array(),
+			),
+			
+			array(
+				'handle'	=> 'acf-field-group',
+				'src'		=> acf_get_dir( 'css/field-group.css' ),
+				'deps'		=> array(),
+			),
+			
+			array(
+				'handle'	=> 'acf-input',
+				'src'		=> acf_get_dir( 'css/input.css' ),
+				'deps'		=> array('acf-datepicker', 'select2'),
+			)
+			
+		);		
 		
+		foreach( $styles as $style ) {
 		
-		foreach( $styles as $style )
-		{
 			wp_register_style( $style['handle'], $style['src'], $style['deps'], acf_get_setting('version') ); 
+			
 		}
 		
 	}
@@ -426,29 +444,33 @@ class acf {
 		
 		
 		// acf_field_key
-		if( $field_key = $wp_query->get('acf_field_key') )
-		{
+		if( $field_key = $wp_query->get('acf_field_key') ) {
+		
 			$where .= $wpdb->prepare(" AND {$wpdb->posts}.post_name = %s", $field_key );
+			
 	    }
 	    
 	    
 	    // acf_field_name
-	    if( $field_name = $wp_query->get('acf_field_name') )
-		{
+	    if( $field_name = $wp_query->get('acf_field_name') ) {
+	    
 			$where .= $wpdb->prepare(" AND {$wpdb->posts}.post_excerpt = %s", $field_name );
 			
 			// acf_post_id
-		    if( $post_id = $wp_query->get('acf_post_id') )
-			{
+		    if( $post_id = $wp_query->get('acf_post_id') ) {
+		    
 				$where .= $wpdb->prepare(" AND {$wpdb->postmeta}.post_id = %d", $post_id );
+				
 			}
+			
 	    }
 	    
 	    
 	    // acf_group_key
-		if( $group_key = $wp_query->get('acf_group_key') )
-		{
+		if( $group_key = $wp_query->get('acf_group_key') ) {
+		
 			$where .= $wpdb->prepare(" AND {$wpdb->posts}.post_name = %s", $group_key );
+			
 	    }
 	    
 	    
@@ -518,15 +540,16 @@ class acf {
 *  @return	(object)
 */
 
-function acf()
-{
+function acf() {
+
 	global $acf;
 	
-	if( !isset($acf) )
-	{
+	if( !isset($acf) ) {
+	
 		$acf = new acf();
 		
 		$acf->initialize();
+		
 	}
 	
 	return $acf;
