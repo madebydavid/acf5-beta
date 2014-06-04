@@ -1,25 +1,42 @@
 <?php
 
-class acf_field_color_picker extends acf_field
-{
+/*
+*  ACF Color Picker Field Class
+*
+*  All the logic for this field type
+*
+*  @class 		acf_field_color_picker
+*  @extends		acf_field
+*  @package		ACF
+*  @subpackage	Fields
+*/
+
+if( ! class_exists('acf_field_color_picker') ) :
+
+class acf_field_color_picker extends acf_field {
+	
 	
 	/*
 	*  __construct
 	*
-	*  Set name / label needed for actions / filters
+	*  This function will setup the field type data
 	*
-	*  @since	3.6
-	*  @date	23/01/13
+	*  @type	function
+	*  @date	5/03/2014
+	*  @since	5.0.0
+	*
+	*  @param	n/a
+	*  @return	n/a
 	*/
 	
-	function __construct()
-	{
+	function __construct() {
+		
 		// vars
 		$this->name = 'color_picker';
 		$this->label = __("Color Picker",'acf');
 		$this->category = 'jquery';
 		$this->defaults = array(
-			'default_value'	=>	'',
+			'default_value'	=> '',
 		);
 		
 		
@@ -37,6 +54,7 @@ class acf_field_color_picker extends acf_field
 	*  @type	function
 	*  @date	3/03/2014
 	*  @since	5.0.0
+	*  @todo	only run conditionaly if field is added to page
 	*
 	*  @param	$post_id (int)
 	*  @return	$post_id (int)
@@ -49,9 +67,10 @@ class acf_field_color_picker extends acf_field
 		
 		
 		// bail early if already set
-		if( isset($wp_scripts->registered['iris']) )
-		{
+		if( isset($wp_scripts->registered['iris']) ) {
+			
 			return;
+			
 		}
 		
 		
@@ -101,9 +120,10 @@ class acf_field_color_picker extends acf_field
 		
 		
 		// populate atts
-		foreach( array( 'id', 'class', 'name', 'value' ) as $k )
-		{
+		foreach( array( 'id', 'class', 'name', 'value' ) as $k ) {
+		
 			$atts[ $k ] = $field[ $k ];
+			
 		}
 		
 		
@@ -147,5 +167,7 @@ class acf_field_color_picker extends acf_field
 }
 
 new acf_field_color_picker();
+
+endif;
 
 ?>
