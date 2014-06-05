@@ -401,10 +401,6 @@ class acf_field_relationship extends acf_field {
 			
 		}
 		
-		echo '<pre>';
-			print_r( $post_types );
-		echo '</pre>';
-		
 		$post_types = acf_get_pretty_post_types($post_types);
 		
 		
