@@ -1,19 +1,36 @@
 <?php
 
-class acf_field_tab extends acf_field
-{
+/*
+*  ACF Tab Field Class
+*
+*  All the logic for this field type
+*
+*  @class 		acf_field_tab
+*  @extends		acf_field
+*  @package		ACF
+*  @subpackage	Fields
+*/
+
+if( ! class_exists('acf_field_tab') ) :
+
+class acf_field_tab extends acf_field {
+	
 	
 	/*
 	*  __construct
 	*
-	*  Set name / label needed for actions / filters
+	*  This function will setup the field type data
 	*
-	*  @since	3.6
-	*  @date	23/01/13
+	*  @type	function
+	*  @date	5/03/2014
+	*  @since	5.0.0
+	*
+	*  @param	n/a
+	*  @return	n/a
 	*/
 	
-	function __construct()
-	{
+	function __construct() {
+		
 		// vars
 		$this->name = 'tab';
 		$this->label = __("Tab",'acf');
@@ -37,9 +54,10 @@ class acf_field_tab extends acf_field
 	*  @date	23/01/13
 	*/
 	
-	function render_field( $field )
-	{
+	function render_field( $field ) {
+	
 		echo '<div class="acf-tab" data-id="' . $field['key'] . '">' . $field['label'] . '</div>';
+		
 	}
 	
 	
@@ -93,5 +111,7 @@ class acf_field_tab extends acf_field
 }
 
 new acf_field_tab();
+
+endif;
 
 ?>
