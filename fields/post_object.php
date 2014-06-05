@@ -496,7 +496,7 @@ class acf_field_post_object extends acf_field {
 		}
 		
 		
-		// upate value to include $post
+		// update value to include $post
 		foreach( array_keys($value) as $i ) {
 			
 			$value[ $i ] = get_post( $value[ $i ] );

@@ -1,18 +1,36 @@
 <?php
 
-class acf_field_taxonomy extends acf_field
-{
+/*
+*  ACF Taxonomy Field Class
+*
+*  All the logic for this field type
+*
+*  @class 		acf_field_tab
+*  @extends		acf_field
+*  @package		ACF
+*  @subpackage	Fields
+*/
+
+if( ! class_exists('acf_field_taxonomy') ) :
+
+class acf_field_taxonomy extends acf_field {
+	
+	
 	/*
 	*  __construct
 	*
-	*  Set name / label needed for actions / filters
+	*  This function will setup the field type data
 	*
-	*  @since	3.6
-	*  @date	23/01/13
+	*  @type	function
+	*  @date	5/03/2014
+	*  @since	5.0.0
+	*
+	*  @param	n/a
+	*  @return	n/a
 	*/
 	
-	function __construct()
-	{
+	function __construct() {
+		
 		// vars
 		$this->name = 'taxonomy';
 		$this->label = __("Taxonomy",'acf');
@@ -27,13 +45,13 @@ class acf_field_taxonomy extends acf_field
 		);
 		
 		
-		// do not delete!
-    	parent::__construct();
-    	
-    	
-    	// extra
+		// extra
 		add_action('wp_ajax_acf/fields/taxonomy/query',			array($this, 'ajax_query'));
 		add_action('wp_ajax_nopriv_acf/fields/taxonomy/query',	array($this, 'ajax_query'));
+		
+		
+		// do not delete!
+    	parent::__construct();
     	
 	}
 	
@@ -51,46 +69,45 @@ class acf_field_taxonomy extends acf_field
 	*  @return	$post_id (int)
 	*/
 	
-	function ajax_query()
-   	{
+	function ajax_query() {
+		
    		// options
    		$options = acf_parse_args( $_GET, array(
-			'post_id'					=>	0,
-			's'							=>	'',
-			'field_key'					=>	'',
-			'nonce'						=>	'',
+			'post_id'		=> 0,
+			's'				=> '',
+			'field_key'		=> '',
+			'nonce'			=> '',
 		));
 		
 		
-		$args = array(
-			'hide_empty'	=>	false,
-		);
-		
-		
-   		// vars
-   		$r = array();
-   		
-		
 		// validate
-		if( ! wp_verify_nonce($options['nonce'], 'acf_nonce') )
-		{
+		if( ! wp_verify_nonce($options['nonce'], 'acf_nonce') ) {
+		
 			die();
+			
 		}
+		
+		
+		// vars
+   		$r = array();
+		$args = array( 'hide_empty'	=> false );
 		
 		
 		// load field
 		$field = acf_get_field( $options['field_key'] );
 		
-		if( !$field )
-		{
+		if( !$field ) {
+		
 			die();
+			
 		}
 		
 				
 		// search
-		if( $options['s'] )
-		{
+		if( $options['s'] ) {
+		
 			$args['search'] = $options['s'];
+			
 		}
 		
 		
@@ -100,30 +117,32 @@ class acf_field_taxonomy extends acf_field
 		$args = apply_filters('acf/fields/taxonomy/query/key=' . $field['key'], $args, $field, $options['post_id'] );
 			
 		
-		// get posts
+		// get terms
 		$terms = get_terms( $field['taxonomy'], $args );
 		
 		
 		// sort into hierachial order!
-		if( is_taxonomy_hierarchical( $field['taxonomy'] ) )
-		{
+		if( is_taxonomy_hierarchical( $field['taxonomy'] ) ) {
+			
 			// this will fail if a search has taken place because parents wont exist
-			if( empty($args['search']) )
-			{
+			if( empty($args['search']) ) {
+			
 				$terms = _get_term_children( 0, $terms, $field['taxonomy'] );
+				
 			}
+			
 		}
 		
 		
 		/// append to r
-		foreach( $terms as $term )
-		{
+		foreach( $terms as $term ) {
+		
 			// add to json
 			$r[] = array(
 				'id'	=> $term->term_id,
 				'text'	=> $this->get_result( $term, $field, $options['post_id'] )
 			);
-
+			
 		}
 		
 		
@@ -175,12 +194,10 @@ class acf_field_taxonomy extends acf_field
 		// ancestors
 		$ancestors = get_ancestors( $term->term_id, $field['taxonomy'] );
 		
-		if( !empty($ancestors) )
-		{
-			foreach( $ancestors as $a )
-			{
-				$title .= '- ';
-			}
+		if( !empty($ancestors) ) {
+		
+			$title .= str_repeat('- ', count($ancestors));
+			
 		}
 		
 		
@@ -215,23 +232,28 @@ class acf_field_taxonomy extends acf_field
 	*  @return	$value - the value to be saved in te database
 	*/
 	
-	function load_value( $value, $post_id, $field )
-	{
-		if( $field['load_save_terms'] )
-		{
+	function load_value( $value, $post_id, $field ) {
+		
+		if( $field['load_save_terms'] ) {
+			
 			$value = array();
 			
 			$terms = get_the_terms( $post_id, $field['taxonomy'] );
 			
-			if( is_array($terms) ){ foreach( $terms as $term ){
+			if( !empty($terms) ) {
 				
-				$value[] = $term->term_id;
+				foreach( $terms as $term ) {
+					
+					$value[] = $term->term_id;
+					
+				}
 				
-			}}
+			}
 			
 		}
 		
 		
+		// return
 		return $value;
 	}
 	
@@ -252,21 +274,23 @@ class acf_field_taxonomy extends acf_field
 	*  @return	$value - the modified value
 	*/
 	
-	function update_value( $value, $post_id, $field )
-	{
+	function update_value( $value, $post_id, $field ) {
+		
 		// vars
-		if( is_array($value) )
-		{
+		if( is_array($value) ) {
+		
 			$value = array_filter($value);
+			
 		}
 		
 		
-		if( $field['load_save_terms'] )
-		{
+		if( $field['load_save_terms'] ) {
+		
 			// Parse values
 			$value = acf_parse_types( $value );
 		
 			wp_set_object_terms( $post_id, $value, $field['taxonomy'], false );
+			
 		}
 		
 		
@@ -293,51 +317,117 @@ class acf_field_taxonomy extends acf_field
 	
 	function format_value( $value, $post_id, $field, $template ) {
 		
-		
 		// bail early if no value
-		if( empty($value) )
-		{
+		if( empty($value) ) {
+		
 			return $value;
+			
 		}
 		
 		
-		// bail early if not formatting for template use
-		if( !$template )
-		{
-			return $value;
-		}
+		// force value to array
+		$value = acf_force_type_array( $value );
 		
 		
-		// temp convert to array
-		$is_array = true;
+		// convert values to int
+		$value = array_map('intval', $value);
 		
-		if( !is_array($value) )
-		{
-			$is_array = false;
-			$value = acf_force_type_array( $value );
-		}
-		
-		
-		// format
-		if( $field['return_format'] == 'object' )
-		{
-			foreach( $value as $k => $v )
-			{
-				$value[ $k ] = get_term( $v, $field['taxonomy'] );
+	
+		// load terms if needed
+		if( !$template || $field['return_format'] == 'object' ) {
+			
+			// load terms in 1 query to save multiple DB calls from following code
+			if( count($value) > 1 ) {
+				
+				$terms = get_terms($field['taxonomy'], array(
+					'hide_empty'	=> false,
+					'include'		=> $value,
+				));
+				
 			}
+			
+			
+			// update value to include $post
+			foreach( array_keys($value) as $i ) {
+				
+				$value[ $i ] = get_term( $value[ $i ], $field['taxonomy'] );
+				
+			}
+		
 		}
 		
 		
-		// de-convert from array
-		if( !$is_array && isset($value[0]) )
-		{
-			$value = $value[0];
+		// convert back from array if neccessary
+		if( $field['field_type'] == 'select' || $field['field_type'] == 'radio' ) {
+			
+			$value = array_shift($value);
+			
 		}
 		
-		// Note: This function can be removed if not used
+
+		// return
 		return $value;
 	}
+	
+	
+	/*
+	*  render_field()
+	*
+	*  Create the HTML interface for your field
+	*
+	*  @type	action
+	*  @since	3.6
+	*  @date	23/01/13
+	*
+	*  @param	$field - an array holding all the field's data
+	*/
+	
+	function render_field( $field ) {
+		
+?>
+<div class="acf-taxonomy-field" data-load_save="<?php echo $field['load_save_terms']; ?>">
+	<?php
 
+	if( $field['field_type'] == 'select' ) {
+	
+		$field['multiple'] = 0;
+		
+		$this->render_field_select( $field );
+	
+	} elseif( $field['field_type'] == 'multi_select' ) {
+		
+		$field['multiple'] = 1;
+		
+		$this->render_field_select( $field );
+	
+	} elseif( $field['field_type'] == 'radio' ) {
+		
+		$this->render_field_checkbox( $field );
+		
+	} elseif( $field['field_type'] == 'checkbox' ) {
+	
+		$this->render_field_checkbox( $field );
+		
+	}
+
+	?>
+</div>
+<?php
+		
+	}
+	
+	
+	/*
+	*  render_field_select()
+	*
+	*  Create the HTML interface for your field
+	*
+	*  @type	action
+	*  @since	3.6
+	*  @date	23/01/13
+	*
+	*  @param	$field - an array holding all the field's data
+	*/
 	
 	function render_field_select( $field ) {
 		
@@ -348,63 +438,95 @@ class acf_field_taxonomy extends acf_field
 		$field['choices'] = array();
 		
 		
-		// is array
-		$is_array = is_array($field['value']);
-		
-		
-		// value must be array!
+		// value must be array
 		$field['value'] = acf_force_type_array( $field['value'] );
 		
 		
-		// populate choices
-		if( !empty($field['value']) )
-		{
-			$taxonomy = acf_force_type_array( $field['taxonomy'] );
-				
-			$terms = get_terms($taxonomy, array(
-				'hide_empty'    => false,
-				'include'		=> $field['value'],
-			));
+		// value
+		if( !empty($field['value']) ) {
 			
-			if( !empty($terms) )
-			{
-				foreach( $terms as $term )
-				{
-					$field['choices'][ $term->term_id ] = $this->get_result( $term, $field );
-				}
+			// set choices
+			foreach( array_keys($field['value']) as $i ) {
+				
+				// vars
+				$term = $field['value'][ $i ];
+				
+				
+				// append to choices
+				$field['choices'][ $term->term_id ] = $this->get_result( $term, $field );
+				
+				
+				// update value for select field to work
+				$field['value'][ $i ] = $term->term_id;
+				
 			}
+			
+			
+			// convert back from array if neccessary
+			if( !$field['multiple'] ) {
+			
+				$field['value'] = array_shift($field['value']);
+				
+			}
+			
 		}
-	
-		
-		// convert back from array if neccessary
-		if( !$is_array || !$field['multiple'] )
-		{
-			$field['value'] = array_shift($field['value']);
-		}
 		
 		
+		// render select		
 		acf_render_field( $field );
 			
 	}
 	
 	
+	/*
+	*  render_field_checkbox()
+	*
+	*  Create the HTML interface for your field
+	*
+	*  @type	action
+	*  @since	3.6
+	*  @date	23/01/13
+	*
+	*  @param	$field - an array holding all the field's data
+	*/
+	
 	function render_field_checkbox( $field ) {
 		
+		// hidden input
 		acf_hidden_input(array(
 			'type'	=> 'hidden',
 			'name'	=> $field['name'],
 		));
 		
 		
-		// update name
-		if( $field['field_type'] == 'checkbox' )
-		{
+		// checkbox saves an array
+		if( $field['field_type'] == 'checkbox' ) {
+		
 			$field['name'] .= '[]';
+			
 		}
 		
 		
 		// value must be array!
 		$field['value'] = acf_force_type_array( $field['value'] );
+		
+		
+		// value
+		if( !empty($field['value']) ) {
+			
+			// set choices
+			foreach( array_keys($field['value']) as $i ) {
+				
+				// vars
+				$term = $field['value'][ $i ];
+				
+				
+				// update value for select field to work
+				$field['value'][ $i ] = $term->term_id;
+				
+			}
+			
+		}
 		
 		
 		// vars
@@ -428,7 +550,7 @@ class acf_field_taxonomy extends acf_field
 				<?php if( $field['field_type'] == 'radio' && $field['allow_null'] ): ?>
 					<li>
 						<label class="selectit">
-							<input type="<?php echo $field['field_type']; ?>" name="<?php echo $field['name']; ?>" value="" /> <?php _e("None", 'acf'); ?>
+							<input type="radio" name="<?php echo $field['name']; ?>" value="" /> <?php _e("None", 'acf'); ?>
 						</label>
 					</li>
 				<?php endif; ?>
@@ -444,53 +566,6 @@ class acf_field_taxonomy extends acf_field
 		
 	}
 	
-	
-	
-	/*
-	*  render_field()
-	*
-	*  Create the HTML interface for your field
-	*
-	*  @type	action
-	*  @since	3.6
-	*  @date	23/01/13
-	*
-	*  @param	$field - an array holding all the field's data
-	*/
-	
-	function render_field( $field )
-	{	
-		?>
-		<div class="acf-taxonomy-field" data-load_save="<?php echo $field['load_save_terms']; ?>">
-		<?php
-		
-			if( $field['field_type'] == 'select' )
-			{
-				$field['multiple'] = 0;
-				
-				$this->render_field_select( $field );
-			}
-			elseif( $field['field_type'] == 'multi_select' )
-			{
-				$field['multiple'] = 1;
-				
-				$this->render_field_select( $field );
-			}
-			elseif( $field['field_type'] == 'radio' )
-			{
-				$this->render_field_checkbox( $field );
-			}
-			elseif( $field['field_type'] == 'checkbox' )
-			{
-				$this->render_field_checkbox( $field );
-			}
-		
-		?>
-		</div>
-		<?php
-	}
-	
-	
 	/*
 	*  render_field_settings()
 	*
@@ -504,8 +579,8 @@ class acf_field_taxonomy extends acf_field
 	*  @param	$field	- an array holding all the field's data
 	*/
 	
-	function render_field_settings( $field )
-	{
+	function render_field_settings( $field ) {
+		
 		// default_value
 		acf_render_field_setting( $field, array(
 			'label'			=> __('Taxonomy','acf'),
@@ -579,88 +654,82 @@ class acf_field_taxonomy extends acf_field
 
 new acf_field_taxonomy();
 
+endif;
 
-class acf_taxonomy_field_walker extends Walker
-{
-	// vars
+if( ! class_exists('acf_taxonomy_field_walker') ) :
+
+class acf_taxonomy_field_walker extends Walker {
+	
 	var $field = null,
 		$tree_type = 'category',
 		$db_fields = array ( 'parent' => 'parent', 'id' => 'term_id' );
-
-
-	// construct
-	function __construct( $field )
-	{
+	
+	function __construct( $field ) {
+	
 		$this->field = $field;
+		
 	}
 
-	
-	// start_el
-	function start_el( &$output, $term, $depth = 0, $args = array(), $current_object_id = 0)
-	{
+	function start_el( &$output, $term, $depth = 0, $args = array(), $current_object_id = 0) {
+		
 		// vars
 		$selected = in_array( $term->term_id, $this->field['value'] );
 		
-		if( $this->field['field_type'] == 'checkbox' )
-		{
-			$output .= '<li><label class="selectit"><input type="checkbox" name="' . $this->field['name'] . '" value="' . $term->term_id . '" ' . ($selected ? 'checked="checked"' : '') . ' /> ' . $term->name . '</label>';
-		}
-		elseif( $this->field['field_type'] == 'radio' )
-		{
-			$output .= '<li><label class="selectit"><input type="radio" name="' . $this->field['name'] . '" value="' . $term->term_id . '" ' . ($selected ? 'checked="checkbox"' : '') . ' /> ' . $term->name . '</label>';
-		}
-		/*
-elseif( $this->field['field_type'] == 'select' )
-		{
-			$indent = str_repeat("&mdash;", $depth);
-			$output .= '<option value="' . $term->term_id . '" ' . ($selected ? 'selected="selected"' : '') . '>' . $indent . ' ' . $term->name . '</option>';
-		}
-*/
+		if( $this->field['field_type'] == 'checkbox' ) {
 		
+			$output .= '<li><label class="selectit"><input type="checkbox" name="' . $this->field['name'] . '" value="' . $term->term_id . '" ' . ($selected ? 'checked="checked"' : '') . ' /> ' . $term->name . '</label>';
+			
+		} elseif( $this->field['field_type'] == 'radio' ) {
+			
+			$output .= '<li><label class="selectit"><input type="radio" name="' . $this->field['name'] . '" value="' . $term->term_id . '" ' . ($selected ? 'checked="checkbox"' : '') . ' /> ' . $term->name . '</label>';
+		
+		}
+				
 	}
 	
+	function end_el( &$output, $term, $depth = 0, $args = array() ) {
 	
-	//end_el
-	function end_el( &$output, $term, $depth = 0, $args = array() )
-	{
-		if( in_array($this->field['field_type'], array('checkbox', 'radio')) )
-		{
+		if( in_array($this->field['field_type'], array('checkbox', 'radio')) ) {
+		
 			$output .= '</li>';
+			
 		}
 		
 		$output .= "\n";
 	}
 	
+	function start_lvl( &$output, $depth = 0, $args = array() ) {
 	
-	// start_lvl
-	function start_lvl( &$output, $depth = 0, $args = array() )
-	{
 		// indent
 		//$output .= str_repeat( "\t", $depth);
 		
 		
 		// wrap element
-		if( in_array($this->field['field_type'], array('checkbox', 'radio')) )
-		{
+		if( in_array($this->field['field_type'], array('checkbox', 'radio')) ) {
+		
 			$output .= '<ul class="children acf-bl">' . "\n";
+			
 		}
+		
 	}
 
+	function end_lvl( &$output, $depth = 0, $args = array() ) {
 	
-	// end_lvl
-	function end_lvl( &$output, $depth = 0, $args = array() )
-	{
 		// indent
 		//$output .= str_repeat( "\t", $depth);
 		
 		
 		// wrap element
-		if( in_array($this->field['field_type'], array('checkbox', 'radio')) )
-		{
+		if( in_array($this->field['field_type'], array('checkbox', 'radio')) ) {
+		
 			$output .= '</ul>' . "\n";
+			
 		}
+		
 	}
 	
 }
+
+endif;
 
 ?>
