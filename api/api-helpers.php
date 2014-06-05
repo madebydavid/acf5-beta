@@ -1472,15 +1472,19 @@ function acf_get_posts( $args ) {
 		'order'						=> 'ASC',
 		'post_status'				=> 'any',
 		'suppress_filters'			=> false,
+		'update_post_meta_cache'	=> false,
 	));
 
 	
 	// find array of post_type
-	$post_types = $args['post_type'];
+	$post_types = acf_force_type_array( $args['post_type'] );
+		
 	
-	if( !is_array($post_types) )
-	{
-		$post_types = array( $post_types );
+	// attachment doesn't work if it is the only item in an array
+	if( count($post_types) == 1 ) {
+	
+		$args['post_type'] = current($post_types);
+		
 	}
 	
 	
@@ -1489,94 +1493,163 @@ function acf_get_posts( $args ) {
 	
 	
 	// loop
-	foreach( $post_types as $post_type )
-	{
+	foreach( $post_types as $post_type ) {
+		
 		// vars
 		$this_posts = array();
-		$this_optgroup = array();
+		$this_group = array();
 		
 		
-		$keys = array_keys($posts);
-		foreach( $keys as $key )
-		{
-			if( $posts[ $key ]->post_type == $post_type )
-			{
+		// populate $this_posts
+		foreach( array_keys($posts) as $key ) {
+		
+			if( $posts[ $key ]->post_type == $post_type ) {
+				
 				$this_posts[] = acf_extract_var( $posts, $key );
+				
 			}
+			
 		}
 		
 		
 		// bail early if no posts for this post type
-		if( empty($this_posts) )
-		{
+		if( empty($this_posts) ) {
+		
 			continue;
+			
 		}
 		
 		
 		// sort into hierachial order!
-		if( is_post_type_hierarchical( $post_type ) )
-		{
+		if( is_post_type_hierarchical( $post_type ) ) {
+			
 			// this will fail if a search has taken place because parents wont exist
-			if( empty($args['s']) )
-			{
+			if( empty($args['s']) ) {
+			
 				$this_posts = get_page_children( 0, $this_posts );
-			}
-		}
-		
-		
-		foreach( $this_posts as $post )
-		{
-			// title
-			$title = '';
-			$ancestors = get_ancestors( $post->ID, $post->post_type );
-			
-			if( !empty($ancestors) )
-			{
-				foreach( $ancestors as $a )
-				{
-					$title .= '- ';
-				}
+				
 			}
 			
-			
-			// title
-			$title .= get_the_title( $post->ID );
-			
-			
-			// status
-			if( get_post_status( $post->ID ) != "publish" )
-			{
-				$title .= ' (' . get_post_status( $post->ID ) . ')';
-			}
-			
-			
-			// add to optgroup
-			$this_optgroup[ $post->ID ] = $title;
-
 		}
 		
 		
-		// add as optgroup or results
-		if( count($post_types) == 1 )
-		{
-			$r = $this_optgroup;
-		}
-		else
-		{
-			// group by post type
-			$post_type_object = get_post_type_object( $post_type );
-			$post_type_name = $post_type_object->labels->name;
+		// populate $this_posts
+		foreach( array_keys($this_posts) as $key ) {
 			
-			$r[ $post_type_name ] = $this_optgroup;
+			// extract post
+			$post = acf_extract_var( $this_posts, $key );
+			
+			
+			// add to group
+			$this_group[ $post->ID ] = $post;
+			
 		}
 		
 		
+		// group by post type
+		$post_type_object = get_post_type_object( $post_type );
+		$post_type_name = $post_type_object->labels->name;
 		
-		// return
-		return $r;
+		$r[ $post_type_name ] = $this_group;
 					
 	}
 	
+	
+	// return
+	return $r;
+	
+}
+
+
+function acf_get_post_title( $post = 0 ) {
+	
+	// title
+	$title = '';
+	
+	
+	// load post if given an ID
+	if( is_numeric($post) ) {
+		
+		$post = get_post($post);
+		
+	}
+	
+	
+	// ancestors
+	if( $post->post_type != 'attachment' ) {
+		
+		$ancestors = get_ancestors( $post->ID, $post->post_type );
+		
+		if( !empty($ancestors) ) {
+		
+			$title .= str_repeat('- ', count($ancestors));
+			
+		}
+		
+	}
+	
+	
+	// title
+	$title .= get_the_title( $post->ID );
+	
+	
+	// status
+	if( get_post_status( $post->ID ) != "publish" ) {
+		
+		$title .= ' (' . get_post_status( $post->ID ) . ')';
+		
+	}
+	
+	
+	// return
+	return $title;
+	
+}
+
+
+function acf_order_by_search( $array, $search ) {
+	
+	// vars
+	$weights = array();
+	$needle = strtolower($search);
+			
+
+	// add search weight
+	foreach( $array as $k => $v ) {
+	
+		// vars
+		$search_weight = 0;
+		$haystack = strtolower($v);
+		$strpos = strpos($haystack, $needle);
+		
+		
+		// detect search match
+		if( $strpos !== false ) {
+			
+			// set eright to length of match
+			$search_weight = strlen($needle);
+			
+			
+			// increase weight if match starts at begining of string
+			if( $strpos == 0 ) {
+				
+				$search_weight++;
+				
+			}
+		}
+		
+		
+		$weights[] = $search_weight;
+		
+	}
+	
+	
+	// sort the array with menu_order ascending
+	array_multisort( $weights, SORT_DESC, $array );
+	
+	
+	// return
+	return $array;
 }
 
 

@@ -537,21 +537,41 @@ class acf_field_group {
 			
 			case "post" :
 				
-				$post_types = get_post_types();
+				// get post types
+				$exclude = array('page', 'attachment');
+				$post_types = acf_get_post_types( $exclude );
 				
-				unset( 
-					$post_types['page'], 
-					$post_types['attachment'], 
-					$post_types['revision'], 
-					$post_types['nav_menu_item'],
-					$post_types['acf-field'],
-					$post_types['acf-field-group']
-				);
-				
-				$choices = acf_get_posts(array(
+						
+				// get posts grouped by post type
+				$groups = acf_get_posts(array(
 					'post_type' => $post_types
 				));
-								
+				
+				
+				if( !empty($groups) ) {
+			
+					foreach( array_keys($groups) as $group_title ) {
+						
+						// vars
+						$posts = acf_extract_var( $groups, $group_title );
+						
+						
+						// override post data
+						foreach( array_keys($posts) as $post_id ) {
+							
+							// update
+							$posts[ $post_id ] = acf_get_post_title( $posts[ $post_id ] );
+							
+						};
+						
+						
+						// append to $choices
+						$choices[ $group_title ] = $posts;
+						
+					}
+					
+				}
+				
 				break;
 			
 			
@@ -609,9 +629,37 @@ class acf_field_group {
 			
 			case "page" :
 				
-				$choices = acf_get_posts(array(
+				
+				// get posts grouped by post type
+				$groups = acf_get_posts(array(
 					'post_type' => 'page'
 				));
+				
+				
+				if( !empty($groups) ) {
+			
+					foreach( array_keys($groups) as $group_title ) {
+						
+						// vars
+						$posts = acf_extract_var( $groups, $group_title );
+						
+						
+						// override post data
+						foreach( array_keys($posts) as $post_id ) {
+							
+							// update
+							$posts[ $post_id ] = acf_get_post_title( $posts[ $post_id ] );
+							
+						};
+						
+						
+						// append to $choices
+						$choices = $posts;
+						
+					}
+					
+				}
+				
 				
 				break;
 				
