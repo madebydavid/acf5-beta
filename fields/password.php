@@ -1,28 +1,45 @@
 <?php
 
-class acf_field_password extends acf_field
-{
+/*
+*  ACF Password Field Class
+*
+*  All the logic for this field type
+*
+*  @class 		acf_field_password
+*  @extends		acf_field
+*  @package		ACF
+*  @subpackage	Fields
+*/
+
+if( ! class_exists('acf_field_password') ) :
+
+class acf_field_password extends acf_field {
+	
 	
 	/*
 	*  __construct
 	*
-	*  Set name / label needed for actions / filters
+	*  This function will setup the field type data
 	*
-	*  @since	3.6
-	*  @date	23/01/13
+	*  @type	function
+	*  @date	5/03/2014
+	*  @since	5.0.0
+	*
+	*  @param	n/a
+	*  @return	n/a
 	*/
 	
-	function __construct()
-	{
+	function __construct() {
+		
 		// vars
 		$this->name = 'password';
 		$this->label = __("Password",'acf');
 		$this->defaults = array(
-			'placeholder'	=>	'',
-			'prepend'		=>	'',
-			'append'		=>	'',
-			'readonly'		=>	0,
-			'disabled'		=>	0,
+			'placeholder'	=> '',
+			'prepend'		=> '',
+			'append'		=> '',
+			'readonly'		=> 0,
+			'disabled'		=> 0,
 		);
 		
 		
@@ -43,45 +60,49 @@ class acf_field_password extends acf_field
 	*  @date	23/01/13
 	*/
 	
-	function render_field( $field )
-	{
+	function render_field( $field ) {
+		
 		// vars
 		$o = array( 'type', 'id', 'class', 'name', 'value', 'placeholder' );
-		$s = array( 'readonly', 'disabled' );
 		$e = '';
 		
 		
 		// prepend
-		if( $field['prepend'] !== "" )
-		{
+		if( $field['prepend'] !== "" ) {
+		
 			$field['class'] .= ' acf-is-prepended';
 			$e .= '<div class="acf-input-prepend">' . $field['prepend'] . '</div>';
+			
 		}
 		
 		
 		// append
-		if( $field['append'] !== "" )
-		{
+		if( $field['append'] !== "" ) {
+		
 			$field['class'] .= ' acf-is-appended';
 			$e .= '<div class="acf-input-append">' . $field['append'] . '</div>';
+			
 		}
 		
 		
 		// populate atts
 		$atts = array();
-		foreach( $o as $k )
-		{
+		foreach( $o as $k ) {
+		
 			$atts[ $k ] = $field[ $k ];	
+			
 		}
 		
 		
 		// special atts
-		foreach( $s as $k )
-		{
-			if( $field[ $k ] )
-			{
+		foreach( array( 'readonly', 'disabled' ) as $k ) {
+		
+			if( $field[ $k ] ) {
+			
 				$atts[ $k ] = $k;
+				
 			}
+			
 		}
 		
 		
@@ -109,8 +130,8 @@ class acf_field_password extends acf_field
 	*  @param	$field	- an array holding all the field's data
 	*/
 	
-	function render_field_settings( $field )
-	{
+	function render_field_settings( $field ) {
+		
 		// placeholder
 		acf_render_field_setting( $field, array(
 			'label'			=> __('Placeholder Text','acf'),
@@ -141,5 +162,7 @@ class acf_field_password extends acf_field
 }
 
 new acf_field_password();
+
+endif;
 
 ?>

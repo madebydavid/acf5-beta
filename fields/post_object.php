@@ -73,11 +73,11 @@ class acf_field_post_object extends acf_field {
 		
    		// options
    		$options = acf_parse_args( $_GET, array(
-			'post_id'					=>	0,
-			's'							=>	'',
-			'lang'						=>	false,
-			'field_key'					=>	'',
-			'nonce'						=>	'',
+			'post_id'		=> 0,
+			's'				=> '',
+			'lang'			=> false,
+			'field_key'		=> '',
+			'nonce'			=> '',
 		));
 		
 		
@@ -108,7 +108,12 @@ class acf_field_post_object extends acf_field {
 		if( $options['lang'] ) {
 		
 			global $sitepress;
-			$sitepress->switch_lang( $options['lang'] );
+			
+			if( !empty($sitepress) ) {
+			
+				$sitepress->switch_lang( $options['lang'] );
+				
+			}
 			
 		}
 		
@@ -146,6 +151,7 @@ class acf_field_post_object extends acf_field {
 				);
 				
 			}
+			
 		}
 		
 		
@@ -184,22 +190,8 @@ class acf_field_post_object extends acf_field {
 				
 				foreach( array_keys($posts) as $post_id ) {
 					
-					// vars
-					$post = $posts[ $post_id ];
-					
-					
-					// get title
-					$title = acf_get_post_title( $post );
-					
-					
-					// filters
-					$title = apply_filters('acf/fields/post_object/result', $title, $post, $field, $options['post_id']);
-					$title = apply_filters('acf/fields/post_object/result/name=' . $field['name'] , $title, $post, $field, $options['post_id']);
-					$title = apply_filters('acf/fields/post_object/result/key=' . $field['key'], $title, $post, $field, $options['post_id']);
-					
-					
 					// override data
-					$posts[ $post_id ] = $title;
+					$posts[ $post_id ] = $this->acf_get_post_title( $posts[ $post_id ], $field, $options['post_id'] );
 					
 				};
 				
@@ -250,6 +242,56 @@ class acf_field_post_object extends acf_field {
 	
 	
 	/*
+	*  acf_get_post_title
+	*
+	*  This function returns the HTML for a result
+	*
+	*  @type	function
+	*  @date	1/11/2013
+	*  @since	5.0.0
+	*
+	*  @param	$post (object)
+	*  @param	$field (array)
+	*  @param	$post_id (int) the post_id to which this value is saved to
+	*  @return	(string)
+	*/
+	
+	function acf_get_post_title( $post, $field, $post_id = 0 ) {
+		
+		// get post_id
+		if( !$post_id ) {
+			
+			$form_data = acf_get_setting('form_data');
+			
+			if( !empty($form_data['post_id']) ) {
+				
+				$post_id = $form_data['post_id'];
+				
+			} else {
+				
+				$post_id = get_the_ID();
+				
+			}
+			
+		}
+		
+		
+		// vars
+		$title = acf_get_post_title( $post );
+			
+		
+		// filters
+		$title = apply_filters('acf/fields/post_object/result', $title, $post, $field, $post_id);
+		$title = apply_filters('acf/fields/post_object/result/name=' . $field['_name'], $title, $post, $field, $post_id);
+		$title = apply_filters('acf/fields/post_object/result/key=' . $field['key'], $title, $post, $field, $post_id);
+		
+		
+		// return
+		return $title;
+	}
+	
+	
+	/*
 	*  render_field()
 	*
 	*  Create the HTML interface for your field
@@ -281,7 +323,7 @@ class acf_field_post_object extends acf_field {
 				
 				
 				// append to choices
-				$field['choices'][ $post->ID ] = acf_get_post_title( $post );
+				$field['choices'][ $post->ID ] = $this->acf_get_post_title( $post, $field );
 				
 				
 				// update value for select field to work

@@ -900,12 +900,14 @@ function acf_get_post_types( $exclude = array(), $include = array() ) {
 	
 	// include
 	if( !empty($include) ) {
-	
-		foreach( $include as $p ) {	
-						
-			if( post_type_exists($p) ) {	
+		
+		foreach( array_keys($include) as $i ) {
+			
+			$post_type = $include[ $i ];
+			
+			if( post_type_exists($post_type) ) {	
 									
-				$post_types[ $p ] = $p;
+				$post_types[ $post_type ] = $post_type;
 				
 			}
 			
@@ -915,9 +917,9 @@ function acf_get_post_types( $exclude = array(), $include = array() ) {
 	
 	
 	// exclude
-	foreach( $exclude as $p ) {
-	
-		unset( $post_types[ $p ] );
+	foreach( array_values($exclude) as $i ) {
+		
+		unset( $post_types[ $i ] );
 		
 	}
 	
@@ -941,16 +943,18 @@ function acf_get_pretty_post_types( $post_types = array() ) {
 	
 	// get labels
 	$ref = array();
+	$r = array();
 	
-	foreach( $post_types as $k => $v ) {
+	foreach( array_keys($post_types) as $i ) {
 		
 		// vars
-		$obj = get_post_type_object($k);
+		$post_type = acf_extract_var( $post_types, $i);
+		$obj = get_post_type_object($post_type);
 		$name = $obj->labels->singular_name;
 		
 		
-		// update label
-		$post_types[ $k ] = $name;
+		// append to r
+		$r[ $post_type ] = $name;
 		
 		
 		// increase counter
@@ -965,11 +969,14 @@ function acf_get_pretty_post_types( $post_types = array() ) {
 	
 	
 	// get slugs
-	foreach( $post_types as $k => $v ) {
+	foreach( array_keys($r) as $i ) {
 		
-		if( $ref[ $v ] > 1 ) {
+		// vars
+		$post_type = $r[ $i ];
+		
+		if( $ref[ $post_type ] > 1 ) {
 			
-			$post_types[ $k ] .= ' (' . $k . ')';
+			$r[ $i ] .= ' (' . $i . ')';
 			
 		}
 		
@@ -977,7 +984,7 @@ function acf_get_pretty_post_types( $post_types = array() ) {
 	
 	
 	// return
-	return $post_types;
+	return $r;
 	
 }
 
@@ -1234,44 +1241,44 @@ function acf_get_taxonomies() {
 function acf_get_taxonomy_terms( $taxonomies = false ) {
 
 	// load all taxonomies if not specified in args
-	if( !$taxonomies )
-	{
+	if( empty($taxonomies) ) {
+		
 		$taxonomies = acf_get_taxonomies();
-	}
-	
-	
-	// no array?
-	if( is_string($taxonomies) ) {
-		
-		$taxonomies = array(
-			$taxonomies => $taxonomies
-		);
 		
 	}
 	
+	
+	// force array
+	$taxonomies = acf_force_type_array( $taxonomies );
+		
 	
 	// vars
 	$r = array();
 	
 	
 	// populate $r
-	foreach( $taxonomies as $taxonomy => $label )
-	{
+	foreach( array_keys($taxonomies) as $i ) {
+		
+		// vars
+		$taxonomy = $taxonomies[ $i ];
 		$terms = get_terms( $taxonomy, array( 'hide_empty' => false ) );
 		
-		if( !empty($terms) )
-		{
-			$r[ $label ] = array();
+		
+		if( !empty($terms) ) {
 			
-			foreach( $terms as $term )
-			{
+			$r[ $taxonomy ] = array();
+			
+			foreach( $terms as $term ) {
+			
 				$k = "{$taxonomy}:{$term->slug}"; 
-				$r[ $label ][ $k ] = $term->name;
+				$r[ $taxonomy ][ $k ] = $term->name;
+				
 			}
+			
 		}
-
+		
 	}
-	
+		
 	
 	// return
 	return $r;
@@ -1425,17 +1432,26 @@ function acf_cache_get( $key, &$found ) {
 
 function acf_force_type_array( $var ) {
 	
+	// bail early if empty
+	if( empty($var) ) {
+		
+		return array();
+	}
+	
+	
 	// is array?
-	if( is_array($var) )
-	{
+	if( is_array($var) ) {
+	
 		return $var;
+	
 	}
 	
 	
 	// string 
-	if( is_string($var) )
-	{
+	if( is_string($var) ) {
+		
 		return explode(',', $var);
+		
 	}
 	
 	
