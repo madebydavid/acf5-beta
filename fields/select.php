@@ -164,7 +164,7 @@ class acf_field_select extends acf_field {
 		
 		
 		// decode value (convert to array)
-		$field['value'] = acf_decode_choices($field['value']);
+		$field['value'] = acf_force_type_array($field['value']);
 		
 		
 		// placeholder
