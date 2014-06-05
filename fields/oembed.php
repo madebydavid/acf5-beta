@@ -1,19 +1,36 @@
 <?php
 
-class acf_field_oembed extends acf_field
-{
+/*
+*  ACF oEmbed Field Class
+*
+*  All the logic for this field type
+*
+*  @class 		acf_field_oembed
+*  @extends		acf_field
+*  @package		ACF
+*  @subpackage	Fields
+*/
+
+if( ! class_exists('acf_field_oembed') ) :
+
+class acf_field_oembed extends acf_field {
+	
 	
 	/*
 	*  __construct
 	*
-	*  Set name / label needed for actions / filters
+	*  This function will setup the field type data
 	*
-	*  @since	3.6
-	*  @date	23/01/13
+	*  @type	function
+	*  @date	5/03/2014
+	*  @since	5.0.0
+	*
+	*  @param	n/a
+	*  @return	n/a
 	*/
 	
-	function __construct()
-	{
+	function __construct() {
+		
 		// vars
 		$this->name = 'oembed';
 		$this->label = __("oEmbed",'acf');
@@ -28,13 +45,14 @@ class acf_field_oembed extends acf_field
 		);
 
 		
+		// extra
+		add_action('wp_ajax_acf/fields/oembed/search',			array($this, 'ajax_search'));
+		add_action('wp_ajax_nopriv_acf/fields/oembed/search',	array($this, 'ajax_search'));
+		
+		
 		// do not delete!
     	parent::__construct();
     	
-    	
-    	// extra
-		add_action('wp_ajax_acf/fields/oembed/search',			array($this, 'ajax_search'));
-		add_action('wp_ajax_nopriv_acf/fields/oembed/search',	array($this, 'ajax_search'));
 	}
 	
 	
@@ -83,8 +101,8 @@ class acf_field_oembed extends acf_field
 	*  @return	$post_id (int)
 	*/
 	
-	function ajax_search()
-   	{
+	function ajax_search() {
+		
    		// options
    		$args = acf_parse_args( $_POST, array(
 			's'			=> '',
@@ -95,20 +113,24 @@ class acf_field_oembed extends acf_field
 		
 		
 		// width and height
-		if( !$args['width'] )
-		{
+		if( !$args['width'] ) {
+		
 			$args['width'] = $this->default_values['width'];
+			
 		}
-		if( !$args['height'] )
-		{
+		
+		if( !$args['height'] ) {
+		
 			$args['height'] = $this->default_values['height'];
+			
 		}
 		
 		
 		// validate
-		if( ! wp_verify_nonce($args['nonce'], 'acf_nonce') )
-		{
+		if( ! wp_verify_nonce($args['nonce'], 'acf_nonce') ) {
+		
 			die();
+			
 		}
 		
 		
@@ -137,12 +159,14 @@ class acf_field_oembed extends acf_field
 	function render_field( $field ) {
 		
 		// default options
-		foreach( $this->default_values as $k => $v )
-		{
-			if( empty($field[ $k ]) )
-			{
+		foreach( $this->default_values as $k => $v ) {
+		
+			if( empty($field[ $k ]) ) {
+			
 				$field[ $k ] = $v;
-			}	
+				
+			}
+			
 		}
 		
 		
@@ -153,52 +177,54 @@ class acf_field_oembed extends acf_field
 			'data-height'	=> $field['height']
 		);
 		
-		if( $field['value'] )
-		{
+		if( $field['value'] ) {
+		
 			$atts['class'] .= ' has-value';
+			
 		}
 		
-		?>
-		<div <?php acf_esc_attr_e($atts) ?>>
-			<div class="acf-hidden">
-				<input type="hidden" data-name="value-input" name="<?php echo esc_attr($field['name']); ?>" value="<?php echo esc_attr($field['value']); ?>" />
-			</div>
-			<div class="title acf-soh">
-				
-				<div class="title-value">
-					<h4 data-name="value-title"><?php echo $field['value']; ?></h4>
-				</div>
-				
-				<div class="title-search">
-					
-					<input data-name="search-input" type="text" placeholder="<?php _e("Enter URL", 'acf'); ?>" autocomplete="off" />
-				</div>
-				
-				<a data-name="clear-button" href="#" class="acf-icon light acf-soh-target">
-					<i class="acf-sprite-delete"></i>
-				</a>
-				
-			</div>
-			<div class="canvas">
-				
-				<div class="canvas-loading">
-					<i class="acf-loading"></i>
-				</div>
-				
-				<div class="canvas-error">
-					<p><strong><?php _e("Error", 'acf'); ?></strong>. <?php _e("No embed found for the given URL", 'acf'); ?></p>
-				</div>
-				
-				<div class="canvas-media" data-name="value-embed">
-					<?php echo $this->wp_oembed_get($field['value'], $field['width'], $field['height']); ?>
-				</div>
-				
-				<i class="acf-sprite-media hide-if-value"></i>
-				
-			</div>
-			
+?>
+<div <?php acf_esc_attr_e($atts) ?>>
+	<div class="acf-hidden">
+		<input type="hidden" data-name="value-input" name="<?php echo esc_attr($field['name']); ?>" value="<?php echo esc_attr($field['value']); ?>" />
+	</div>
+	<div class="title acf-soh">
+		
+		<div class="title-value">
+			<h4 data-name="value-title"><?php echo $field['value']; ?></h4>
 		</div>
-		<?php
+		
+		<div class="title-search">
+			
+			<input data-name="search-input" type="text" placeholder="<?php _e("Enter URL", 'acf'); ?>" autocomplete="off" />
+		</div>
+		
+		<a data-name="clear-button" href="#" class="acf-icon light acf-soh-target">
+			<i class="acf-sprite-delete"></i>
+		</a>
+		
+	</div>
+	<div class="canvas">
+		
+		<div class="canvas-loading">
+			<i class="acf-loading"></i>
+		</div>
+		
+		<div class="canvas-error">
+			<p><strong><?php _e("Error", 'acf'); ?></strong>. <?php _e("No embed found for the given URL", 'acf'); ?></p>
+		</div>
+		
+		<div class="canvas-media" data-name="value-embed">
+			<?php echo $this->wp_oembed_get($field['value'], $field['width'], $field['height']); ?>
+		</div>
+		
+		<i class="acf-sprite-media hide-if-value"></i>
+		
+	</div>
+	
+</div>
+<?php
+		
 	}
 	
 	
@@ -215,8 +241,8 @@ class acf_field_oembed extends acf_field
 	*  @date	23/01/13
 	*/
 	
-	function render_field_settings( $field )
-	{
+	function render_field_settings( $field ) {
+		
 		// width
 		acf_render_field_setting( $field, array(
 			'label'			=> __('Embed Size','acf'),
@@ -259,16 +285,18 @@ class acf_field_oembed extends acf_field
 	function format_value( $value, $post_id, $field, $template ) {
 		
 		// bail early if no value
-		if( empty($value) )
-		{
+		if( empty($value) ) {
+		
 			return $value;
+			
 		}
 		
 		
 		// bail early if not formatting for template use
-		if( !$template )
-		{
+		if( !$template ) {
+		
 			return $value;
+			
 		}
 		
 		
@@ -283,5 +311,7 @@ class acf_field_oembed extends acf_field
 }
 
 new acf_field_oembed();
+
+endif;
 
 ?>
