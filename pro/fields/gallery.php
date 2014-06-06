@@ -1,19 +1,36 @@
 <?php
 
-class acf_field_gallery extends acf_field
-{
+/*
+*  ACF Gallery Field Class
+*
+*  All the logic for this field type
+*
+*  @class 		acf_field_gallery
+*  @extends		acf_field
+*  @package		ACF
+*  @subpackage	Fields
+*/
 
+if( ! class_exists('acf_field_gallery') ) :
+
+class acf_field_gallery extends acf_field {
+	
+	
 	/*
 	*  __construct
 	*
-	*  Set name / label needed for actions / filters
+	*  This function will setup the field type data
 	*
-	*  @since	3.6
-	*  @date	23/01/13
+	*  @type	function
+	*  @date	5/03/2014
+	*  @since	5.0.0
+	*
+	*  @param	n/a
+	*  @return	n/a
 	*/
 	
-	function __construct()
-	{
+	function __construct() {
+		
 		// vars
 		$this->name = 'gallery';
 		$this->label = __("Gallery",'acf');
@@ -25,11 +42,11 @@ class acf_field_gallery extends acf_field
 			'max'			=> 0,
 		);
 		$this->l10n = array(
-			'select'		=>	__("Add Image to Gallery",'acf'),
-			'edit'			=>	__("Edit Image",'acf'),
-			'update'		=>	__("Update Image",'acf'),
-			'uploadedTo'	=>	__("uploaded to this post",'acf'),
-			'max'			=>	__("Maximum selection reached",'acf'),
+			'select'		=> __("Add Image to Gallery",'acf'),
+			'edit'			=> __("Edit Image",'acf'),
+			'update'		=> __("Update Image",'acf'),
+			'uploadedTo'	=> __("uploaded to this post",'acf'),
+			'max'			=> __("Maximum selection reached",'acf'),
 			
 			'tmpl'			=> '<div data-id="<%= id %>" class="acf-gallery-attachment acf-soh">
 									<input type="hidden" value="<%= id %>" name="<%= name %>[]">
@@ -87,23 +104,26 @@ class acf_field_gallery extends acf_field
    		
 		
 		// validate
-		if( ! wp_verify_nonce($options['nonce'], 'acf_nonce') )
-		{
+		if( ! wp_verify_nonce($options['nonce'], 'acf_nonce') ) {
+			
 			die();
+			
 		}
 		
-		if( ! $options['id'] )
-		{
+		if( empty($options['id']) ) {
+		
 			die();
+			
 		}
 		
 		
 		// load field
 		$field = acf_get_field( $options['field_key'] );
 		
-		if( !$field )
-		{
+		if( !$field ) {
+		
 			die();
+			
 		}
 		
 		
@@ -130,23 +150,25 @@ class acf_field_gallery extends acf_field
 	function ajax_update_attachment() {
 		
 		// validate
-		if( ! wp_verify_nonce($_REQUEST['nonce'], 'acf_nonce') )
-		{
+		if( ! wp_verify_nonce($_REQUEST['nonce'], 'acf_nonce') ) {
+		
 			wp_send_json_error();
+			
 		}
 		
 		
-		if( empty($_REQUEST['attachments']) )
-		{
+		if( empty($_REQUEST['attachments']) ) {
+		
 			wp_send_json_error();
+			
 		}
 		
-		foreach( $_REQUEST['attachments'] as $id => $changes )
-		{
+		foreach( $_REQUEST['attachments'] as $id => $changes ) {
+			
 			if ( ! current_user_can( 'edit_post', $id ) )
 				wp_send_json_error();
 				
-			$post    = get_post( $id, ARRAY_A );
+			$post = get_post( $id, ARRAY_A );
 		
 			if ( 'attachment' != $post['post_type'] )
 				wp_send_json_error();
@@ -210,18 +232,20 @@ class acf_field_gallery extends acf_field
 		
 		
 		// validate
-		if( ! wp_verify_nonce($args['nonce'], 'acf_nonce') )
-		{
+		if( ! wp_verify_nonce($args['nonce'], 'acf_nonce') ) {
+		
 			wp_send_json_error();
+			
 		}
 		
 		
 		// reverse
-		if( $args['sort'] == 'reverse' )
-		{
+		if( $args['sort'] == 'reverse' ) {
+		
 			$ids = array_reverse($args['ids']);
 			
 			wp_send_json_success($ids);
+			
 		}
 		
 		
@@ -244,11 +268,15 @@ class acf_field_gallery extends acf_field
 		));
 		
 		
-		if( !empty($ids) )
-		{
+		// success
+		if( !empty($ids) ) {
+		
 			wp_send_json_success($ids);
+			
 		}
 		
+		
+		// failure
 		wp_send_json_error();
 		
 	}
@@ -555,6 +583,14 @@ class acf_field_gallery extends acf_field
 		}
 		
 		
+		// force value to array
+		$value = acf_force_type_array( $value );
+		
+		
+		// convert values to int
+		$value = array_map('intval', $value);
+		
+		
 		// bail early if not formatting for template use
 		if( !$template ) {
 			
@@ -563,19 +599,14 @@ class acf_field_gallery extends acf_field
 		}
 		
 		
-		// force value to array
-		$value = acf_force_type_array( $value );
-		
-		
 		// load posts in 1 query to save multiple DB calls from following code
 		$posts = get_posts(array(
 			'posts_per_page'	=> -1,
-			'post_type'			=> acf_get_post_types(),
+			'post_type'			=> 'attachment',
 			'post_status'		=> 'any',
 			'post__in'			=> $value,
 			'orderby'			=> 'post__in'
 		));
-		
 		
 		
 		foreach( $value as $k => $v ) {
@@ -672,16 +703,18 @@ class acf_field_gallery extends acf_field
 	
 	function validate_value( $valid, $value, $field, $input ){
 		
-		if( empty($value) || !is_array($value) )
-		{
+		if( empty($value) || !is_array($value) ) {
+		
 			$value = array();
+			
 		}
 		
 		
-		if( count($value) < $field['min'] )
-		{
+		if( count($value) < $field['min'] ) {
+		
 			$valid = _n( '%s requires at least %s selection', '%s requires at least %s selections', $field['min'], 'acf' );
 			$valid = sprintf( $valid, $field['label'], $field['min'] );
+			
 		}
 		
 				
@@ -693,5 +726,7 @@ class acf_field_gallery extends acf_field
 }
 
 new acf_field_gallery();
+
+endif;
 
 ?>

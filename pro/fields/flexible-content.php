@@ -1124,14 +1124,6 @@ class acf_field_flexible_content extends acf_field {
 
 new acf_field_flexible_content();
 
-
-
-
-
-
-
-
 endif;
-
 
 ?>
