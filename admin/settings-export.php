@@ -229,10 +229,11 @@ class acf_settings_export {
 		
 		
 		// validate type
-		if( $file['type'] !== 'application/json' )
-		{
+		if( pathinfo($file['name'], PATHINFO_EXTENSION) !== 'json' ) {
+		
 			acf_add_admin_notice(__('Incorrect file type', 'acf'), 'error');
 			return;
+			
 		}
 		
 		
