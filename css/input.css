@@ -746,13 +746,8 @@ ul.acf-checkbox-list li label {
 *
 *---------------------------------------------------------------------------------------------*/
 
-.ui-datepicker.acf-datepicker {
+.acf-ui-datepicker .ui-datepicker {
 	z-index: 999999999 !important;
-}
-
-.ui-datepicker.acf-datepicker {
-	background: #fff;
-	border: #E1E1E1 solid 1px;
 }
 
 
