@@ -757,32 +757,29 @@ class acf_field_relationship extends acf_field {
 		$value = array_map('intval', $value);
 		
 		
-		// bail early if is template, but no format is needed
-		if( $template && $field['return_format'] == 'id' ) {
+		// load posts if needed
+		if( !$template || $field['return_format'] == 'object' ) {
 			
-			return $value;
-		
-		}
-		
-		
-		// load posts in 1 query to save multiple DB calls from following code
-		if( count($value) > 1 ) {
+			// load posts in 1 query to save multiple DB calls from following code
+			if( count($value) > 1 ) {
+				
+				$posts = get_posts(array(
+					'posts_per_page'	=> -1,
+					'post_type'			=> acf_get_post_types(),
+					'post_status'		=> 'any',
+					'post__in'			=> $value,
+				));
+				
+			}
 			
-			$posts = get_posts(array(
-				'posts_per_page'	=> -1,
-				'post_type'			=> acf_get_post_types(),
-				'post_status'		=> 'any',
-				'post__in'			=> $value,
-			));
 			
-		}
+			// update value to include $post
+			foreach( array_keys($value) as $i ) {
+				
+				$value[ $i ] = get_post( $value[ $i ] );
+				
+			}
 		
-		
-		// upate value to include $post
-		foreach( array_keys($value) as $i ) {
-			
-			$value[ $i ] = get_post( $value[ $i ] );
-			
 		}
 		
 		
