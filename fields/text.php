@@ -1,31 +1,48 @@
 <?php
 
-class acf_field_text extends acf_field
-{
+/*
+*  ACF Text Field Class
+*
+*  All the logic for this field type
+*
+*  @class 		acf_field_text
+*  @extends		acf_field
+*  @package		ACF
+*  @subpackage	Fields
+*/
+
+if( ! class_exists('acf_field_text') ) :
+
+class acf_field_text extends acf_field {
+	
 	
 	/*
 	*  __construct
 	*
-	*  Set name / label needed for actions / filters
+	*  This function will setup the field type data
 	*
-	*  @since	3.6
-	*  @date	23/01/13
+	*  @type	function
+	*  @date	5/03/2014
+	*  @since	5.0.0
+	*
+	*  @param	n/a
+	*  @return	n/a
 	*/
 	
-	function __construct()
-	{
+	function __construct() {
+		
 		// vars
 		$this->name = 'text';
 		$this->label = __("Text",'acf');
 		$this->defaults = array(
-			'default_value'	=>	'',
-			'formatting' 	=>	'html',
-			'maxlength'		=>	'',
-			'placeholder'	=>	'',
-			'prepend'		=>	'',
-			'append'		=>	'',
-			'readonly'		=>	0,
-			'disabled'		=>	0,
+			'default_value'	=> '',
+			'formatting' 	=> 'html',
+			'maxlength'		=> '',
+			'placeholder'	=> '',
+			'prepend'		=> '',
+			'append'		=> '',
+			'readonly'		=> 0,
+			'disabled'		=> 0,
 		);
 		
 		
@@ -46,8 +63,8 @@ class acf_field_text extends acf_field
 	*  @date	23/01/13
 	*/
 	
-	function render_field( $field )
-	{
+	function render_field( $field ) {
+		
 		// vars
 		$o = array( 'type', 'id', 'class', 'name', 'value', 'placeholder' );
 		$s = array( 'readonly', 'disabled' );
@@ -55,43 +72,49 @@ class acf_field_text extends acf_field
 		
 		
 		// maxlength
-		if( $field['maxlength'] !== "" )
-		{
+		if( $field['maxlength'] !== "" ) {
+		
 			$o[] = 'maxlength';
+			
 		}
 		
 		
 		// prepend
-		if( $field['prepend'] !== "" )
-		{
+		if( $field['prepend'] !== "" ) {
+		
 			$field['class'] .= ' acf-is-prepended';
 			$e .= '<div class="acf-input-prepend">' . $field['prepend'] . '</div>';
+			
 		}
 		
 		
 		// append
-		if( $field['append'] !== "" )
-		{
+		if( $field['append'] !== "" ) {
+		
 			$field['class'] .= ' acf-is-appended';
 			$e .= '<div class="acf-input-append">' . $field['append'] . '</div>';
+			
 		}
 		
 		
 		// populate atts
 		$atts = array();
-		foreach( $o as $k )
-		{
+		foreach( $o as $k ) {
+		
 			$atts[ $k ] = $field[ $k ];	
+			
 		}
 		
 		
 		// special atts
-		foreach( $s as $k )
-		{
-			if( $field[ $k ] )
-			{
+		foreach( $s as $k ) {
+		
+			if( $field[ $k ] ) {
+			
 				$atts[ $k ] = $k;
+				
 			}
+			
 		}
 		
 		
@@ -201,9 +224,10 @@ class acf_field_text extends acf_field
 	function format_value( $value, $post_id, $field, $template ) {
 		
 		// bail early if no value
-		if( empty($value) || !is_string($value) )
-		{
+		if( empty($value) || !is_string($value) ) {
+		
 			return $value;
+			
 		}
 		
 		
@@ -212,20 +236,22 @@ class acf_field_text extends acf_field
 		
 		
 		// bail early if not formatting for template use
-		if( !$template )
-		{
+		if( !$template ) {
+		
 			return $value;
+			
 		}
 		
 		
 		// format
-		if( $field['formatting'] == 'none' )
-		{
+		if( $field['formatting'] == 'none' ) {
+		
 			$value = htmlspecialchars($value, ENT_QUOTES);
-		}
-		elseif( $field['formatting'] == 'html' )
-		{
+			
+		} elseif( $field['formatting'] == 'html' ) {
+		
 			$value = nl2br($value);
+			
 		}
 		
 		
@@ -236,5 +262,7 @@ class acf_field_text extends acf_field
 }
 
 new acf_field_text();
+
+endif;
 
 ?>

@@ -1,19 +1,36 @@
 <?php
 
-class acf_field_textarea extends acf_field
-{
+/*
+*  ACF Text Area Field Class
+*
+*  All the logic for this field type
+*
+*  @class 		acf_field_textarea
+*  @extends		acf_field
+*  @package		ACF
+*  @subpackage	Fields
+*/
+
+if( ! class_exists('acf_field_textarea') ) :
+
+class acf_field_textarea extends acf_field {
+	
 	
 	/*
 	*  __construct
 	*
-	*  Set name / label needed for actions / filters
+	*  This function will setup the field type data
 	*
-	*  @since	3.6
-	*  @date	23/01/13
+	*  @type	function
+	*  @date	5/03/2014
+	*  @since	5.0.0
+	*
+	*  @param	n/a
+	*  @return	n/a
 	*/
 	
-	function __construct()
-	{
+	function __construct() {
+		
 		// vars
 		$this->name = 'textarea';
 		$this->label = __("Text Area",'acf');
@@ -54,34 +71,39 @@ class acf_field_textarea extends acf_field
 		
 		
 		// maxlength
-		if( $field['maxlength'] !== '' )
-		{
+		if( $field['maxlength'] !== '' ) {
+		
 			$o[] = 'maxlength';
+			
 		}
 		
 		
 		// rows
-		if( empty($field['rows']) )
-		{
+		if( empty($field['rows']) ) {
+		
 			$field['rows'] = 8;
+			
 		}
 		
 		
 		// populate atts
 		$atts = array();
-		foreach( $o as $k )
-		{
+		foreach( $o as $k ) {
+		
 			$atts[ $k ] = $field[ $k ];	
+			
 		}
 		
 		
 		// special atts
-		foreach( $s as $k )
-		{
-			if( $field[ $k ] )
-			{
+		foreach( $s as $k ) {
+		
+			if( $field[ $k ] ) {
+			
 				$atts[ $k ] = $k;
+				
 			}
+			
 		}
 		
 
@@ -108,8 +130,8 @@ class acf_field_textarea extends acf_field
 	*  @date	23/01/13
 	*/
 	
-	function render_field_settings( $field )
-	{
+	function render_field_settings( $field ) {
+		
 		// default_value
 		acf_render_field_setting( $field, array(
 			'label'			=> __('Default Value','acf'),
@@ -185,31 +207,34 @@ class acf_field_textarea extends acf_field
 	function format_value( $value, $post_id, $field, $template ) {
 		
 		// bail early if no value
-		if( empty($value) || !is_string($value) )
-		{
+		if( empty($value) || !is_string($value) ) {
+		
 			return $value;
+			
 		}
 		
 		
 		// bail early if not formatting for template use
-		if( !$template )
-		{
+		if( !$template ) {
+		
 			return $value;
+			
 		}
 		
 		
 		// format
-		if( $field['formatting'] == 'none' )
-		{
+		if( $field['formatting'] == 'none' ) {
+		
 			$value = htmlspecialchars($value, ENT_QUOTES);
-		}
-		elseif( $field['formatting'] == 'html' )
-		{
+			
+		} elseif( $field['formatting'] == 'html' ) {
+			
 			$value = wpautop($value);
-		}
-		elseif( $field['formatting'] == 'br' )
-		{
+			
+		} elseif( $field['formatting'] == 'br' ) {
+			
 			$value = nl2br($value);
+			
 		}
 		
 		
@@ -220,5 +245,7 @@ class acf_field_textarea extends acf_field
 }
 
 new acf_field_textarea();
+
+endif;
 
 ?>
