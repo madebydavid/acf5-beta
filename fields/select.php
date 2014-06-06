@@ -142,27 +142,6 @@ class acf_field_select extends acf_field {
 	
 	function render_field( $field ) {
 		
-		// vars
-		$optgroup = false;
-		
-		
-		// determin if choices are grouped (2 levels of array)
-		if( is_array($field['choices']) ) {
-			
-			foreach( $field['choices'] as $k => $v ) {
-				
-				if( is_array($v) ) {
-					
-					$optgroup = true;
-					break;
-					
-				}
-				
-			}
-			
-		}
-		
-		
 		// decode value (convert to array)
 		$field['value'] = acf_force_type_array($field['value']);
 		
@@ -239,52 +218,113 @@ class acf_field_select extends acf_field {
 		}
 		
 		
-		// html
-		echo '<select ' . acf_esc_attr( $atts ) . '>';	
-		
-		
-		// null
-		if( $field['allow_null'] ) {
-		
-			echo '<option value="">- ' . $field['placeholder'] . ' -</option>';
-			
-		}
+		// vars
+		$els = array();
+		$choices = array();
 		
 		
 		// loop through values and add them as options
 		if( !empty($field['choices']) ) {
 		
-			foreach( $field['choices'] as $key => $value ) {
+			foreach( $field['choices'] as $k => $v ) {
 				
-				if( $optgroup ) {
-				
-					// this select is grouped with optgroup
-					if( $key != '' ) echo '<optgroup label="' . $key . '">';
+				if( is_array($v) ){
 					
-					if( !empty($value) ) {
+					// optgroup
+					$els[] = array( 'type' => 'optgroup', 'label' => $k );
+					
+					if( !empty($v) ) {
 						
-						foreach( $value as $id => $label ) {
+						foreach( $v as $k2 => $v2 ) {
 							
-							$selected = in_array($id, $field['value']) ? 'selected="selected"' : '';
-														
-							echo '<option value="' . $id . '" ' . $selected . '>' . $label . '</option>';
+							$els[] = array( 'type' => 'option', 'value' => $k2, 'label' => $v2, 'selected' => in_array($k2, $field['value']) );
+							
+							$choices[] = $k2;
 						}
 						
 					}
 					
-					if( $key != '' ) echo '</optgroup>';
+					$els[] = array( 'type' => '/optgroup' );
 				
 				} else {
 					
-					$selected = in_array($key, $field['value']) ? 'selected="selected"' : '';
+					$els[] = array( 'type' => 'option', 'value' => $k, 'label' => $v, 'selected' => in_array($k, $field['value']) );
 					
-					echo '<option value="' . $key . '" ' . $selected . '>' . $value . '</option>';
+					$choices[] = $k;
 					
 				}
 				
 			}
 			
 		}
+		
+		
+		// prepende orphans
+		if( !empty($field['value']) ) {
+			
+			foreach( $field['value'] as $v ) {
+				
+				if( !in_array($v, $choices) ) {
+					
+					array_unshift( $els, array( 'type' => 'option', 'value' => $v, 'label' => $v, 'selected' => true ) );
+					
+				}
+				
+			}
+			
+		}
+		
+		
+		// null
+		if( $field['allow_null'] ) {
+			
+			array_unshift( $els, array( 'type' => 'option', 'value' => '', 'label' => '- ' . $field['placeholder'] . ' -' ) );
+			
+		}		
+		
+		
+		// html
+		echo '<select ' . acf_esc_attr( $atts ) . '>';	
+		
+		
+		// construct html
+		if( !empty($els) ) {
+			
+			foreach( $els as $el ) {
+				
+				// extract type
+				$type = acf_extract_var($el, 'type');
+				
+				
+				if( $type == 'option' ) {
+					
+					// get label
+					$label = acf_extract_var($el, 'label');
+					
+					
+					// validate selected
+					if( acf_extract_var($el, 'selected') ) {
+						
+						$el['selected'] = 'selected';
+						
+					}
+					
+					
+					// echo
+					echo '<option ' . acf_esc_attr( $el ) . '>' . $label . '</option>';
+					
+				} else {
+					
+					// echo
+					echo '<' . $type . ' ' . acf_esc_attr( $el ) . '>';
+					
+				}
+				
+				
+			}
+			
+		}
+		
 
 		echo '</select>';
 	}
