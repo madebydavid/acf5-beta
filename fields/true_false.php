@@ -1,26 +1,43 @@
 <?php
 
-class acf_field_true_false extends acf_field
-{
+/*
+*  ACF True / False Field Class
+*
+*  All the logic for this field type
+*
+*  @class 		acf_field_true_false
+*  @extends		acf_field
+*  @package		ACF
+*  @subpackage	Fields
+*/
+
+if( ! class_exists('acf_field_true_false') ) :
+
+class acf_field_true_false extends acf_field {
+	
 	
 	/*
 	*  __construct
 	*
-	*  Set name / label needed for actions / filters
+	*  This function will setup the field type data
 	*
-	*  @since	3.6
-	*  @date	23/01/13
+	*  @type	function
+	*  @date	5/03/2014
+	*  @since	5.0.0
+	*
+	*  @param	n/a
+	*  @return	n/a
 	*/
 	
-	function __construct()
-	{
+	function __construct() {
+		
 		// vars
 		$this->name = 'true_false';
 		$this->label = __("True / False",'acf');
 		$this->category = 'choice';
 		$this->defaults = array(
-			'default_value'	=>	0,
-			'message'	=>	'',
+			'default_value'	=> 0,
+			'message'		=> '',
 		);
 		
 		
@@ -42,8 +59,8 @@ class acf_field_true_false extends acf_field
 	*  @date	23/01/13
 	*/
 	
-	function render_field( $field )
-	{
+	function render_field( $field ) {
+		
 		// vars
 		$atts = array(
 			'type'		=> 'checkbox',
@@ -54,9 +71,10 @@ class acf_field_true_false extends acf_field
 		
 		
 		// checked
-		if( !empty($field['value']) )
-		{
+		if( !empty($field['value']) ) {
+		
 			$atts['checked'] = 'checked';
+			
 		}
 		
 		
@@ -81,8 +99,8 @@ class acf_field_true_false extends acf_field
 	*  @param	$field	- an array holding all the field's data
 	*/
 	
-	function render_field_settings( $field )
-	{
+	function render_field_settings( $field ) {
+		
 		// message
 		acf_render_field_setting( $field, array(
 			'label'			=> __('Message','acf'),
@@ -128,5 +146,7 @@ class acf_field_true_false extends acf_field
 }
 
 new acf_field_true_false();
+
+endif;
 
 ?>

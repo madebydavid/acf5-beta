@@ -1,10 +1,21 @@
 <?php
 
+/*
+*  ACF WYSIWYG Field Class
+*
+*  All the logic for this field type
+*
+*  @class 		acf_field_wysiwyg
+*  @extends		acf_field
+*  @package		ACF
+*  @subpackage	Fields
+*/
+
+if( ! class_exists('acf_field_wysiwyg') ) :
+
 class acf_field_wysiwyg extends acf_field {
 	
-	// vars
 	var $exists = 0;
-	
 	
 	/*
 	*  __construct
@@ -32,12 +43,31 @@ class acf_field_wysiwyg extends acf_field {
 		);
 		
 		
+		// filters
+    	add_filter( 'mce_external_plugins', array( $this, 'mce_external_plugins'), 20, 1 );
+    	
+    	
+    	// Create an acf version of the_content filter (acf_the_content)
+		if(	!empty($GLOBALS['wp_embed']) ) {
+		
+			add_filter( 'acf_the_content', array( $GLOBALS['wp_embed'], 'run_shortcode' ), 8 );
+			add_filter( 'acf_the_content', array( $GLOBALS['wp_embed'], 'autoembed' ), 8 );
+			
+		}
+		
+		add_filter( 'acf_the_content', 'capital_P_dangit', 11 );
+		add_filter( 'acf_the_content', 'wptexturize' );
+		add_filter( 'acf_the_content', 'convert_smilies' );
+		add_filter( 'acf_the_content', 'convert_chars' );
+		add_filter( 'acf_the_content', 'wpautop' );
+		add_filter( 'acf_the_content', 'shortcode_unautop' );
+		add_filter( 'acf_the_content', 'prepend_attachment' );
+		add_filter( 'acf_the_content', 'do_shortcode', 11);
+		
+
 		// do not delete!
     	parent::__construct();
     	
-    	
-    	// filters
-    	add_filter( 'mce_external_plugins', array( $this, 'mce_external_plugins'), 20, 1 );
 	}
 	
 	
@@ -262,13 +292,14 @@ class acf_field_wysiwyg extends acf_field {
 			<div id="wp-<?php echo $id; ?>-editor-container" class="wp-editor-container">
 				<textarea id="<?php echo $id; ?>" class="wp-editor-area" name="<?php echo $field['name']; ?>" ><?php 
 				
-				if( user_can_richedit() )
-				{
+				if( user_can_richedit() ) {
+				
 					echo wp_richedit_pre( $field['value'] );
-				} 
-				else
-				{
+					
+				} else {
+					
 					echo wp_htmledit_pre( $field['value'] );
+					
 				}
 				
 				?></textarea>
@@ -298,10 +329,10 @@ class acf_field_wysiwyg extends acf_field {
 		$toolbars = $this->get_toolbars();
 		$choices = array();
 		
-		if( is_array($toolbars) )
-		{
-			foreach( $toolbars as $k => $v )
-			{
+		if( !empty($toolbars) ) {
+		
+			foreach( $toolbars as $k => $v ) {
+				
 				$label = $k;
 				$name = sanitize_title( $label );
 				$name = str_replace('-', '_', $name);
@@ -367,16 +398,18 @@ class acf_field_wysiwyg extends acf_field {
 	function format_value( $value, $post_id, $field, $template ) {
 		
 		// bail early if no value
-		if( empty($value) )
-		{
+		if( empty($value) ) {
+		
 			return $value;
+			
 		}
 		
 		
 		// bail early if not formatting for template use
-		if( !$template )
-		{
+		if( !$template ) {
+		
 			return $value;
+			
 		}
 		
 		
@@ -395,21 +428,6 @@ class acf_field_wysiwyg extends acf_field {
 
 new acf_field_wysiwyg();
 
-
-// Create an acf version of the_content filter (acf_the_content)
-if(	isset($GLOBALS['wp_embed']) )
-{
-	add_filter( 'acf_the_content', array( $GLOBALS['wp_embed'], 'run_shortcode' ), 8 );
-	add_filter( 'acf_the_content', array( $GLOBALS['wp_embed'], 'autoembed' ), 8 );
-}
-
-add_filter( 'acf_the_content', 'capital_P_dangit', 11 );
-add_filter( 'acf_the_content', 'wptexturize' );
-add_filter( 'acf_the_content', 'convert_smilies' );
-add_filter( 'acf_the_content', 'convert_chars' );
-add_filter( 'acf_the_content', 'wpautop' );
-add_filter( 'acf_the_content', 'shortcode_unautop' );
-add_filter( 'acf_the_content', 'prepend_attachment' );
-add_filter( 'acf_the_content', 'do_shortcode', 11);
+endif;
 
 ?>
