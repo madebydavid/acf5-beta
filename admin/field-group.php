@@ -324,22 +324,6 @@ class acf_field_group {
 		acf_update_setting('local', false);
 		
         
-        // delete fields
-        if( $_POST['_acf_delete_fields'] )
-        {
-	    	$ids = explode('|', $_POST['_acf_delete_fields']);
-	    	$ids = array_map( 'intval', $ids );
-	    	
-			foreach( $ids as $id )
-			{
-				if( $id != 0 )
-				{
-					acf_delete_field( $id );
-				}
-			}  
-        }
-        
-        
         // save fields
 		unset( $_POST['acf_fields']['acfcloneindex'] );
 		
@@ -375,6 +359,25 @@ class acf_field_group {
 				acf_update_field( $field, $specific );
 			}
 		}
+		
+		
+		// delete fields
+        if( $_POST['_acf_delete_fields'] ) {
+        	
+	    	$ids = explode('|', $_POST['_acf_delete_fields']);
+	    	$ids = array_map( 'intval', $ids );
+	    	
+			foreach( $ids as $id ) {
+			
+				if( $id != 0 ) {
+				
+					acf_delete_field( $id );
+					
+				}
+				
+			}
+			
+        }
 		
 		
 		// add args
