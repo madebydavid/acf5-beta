@@ -85,6 +85,10 @@ class acf_pro_options_page {
 				
 			}
 			
+		} else {
+			
+			$choices[''] = __('No options pages exist', 'acf');
+			
 		}
 		
 		
