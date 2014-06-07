@@ -1999,6 +1999,13 @@ function acf_get_updates() {
 
 function acf_encode_choices( $array = array() ) {
 	
+	// bail early if already string
+	if( is_string($array) ) {
+		
+		return $array;
+	}
+	
+	
 	// vars
 	$string = '';
 	
@@ -2033,6 +2040,13 @@ function acf_encode_choices( $array = array() ) {
 }
 
 function acf_decode_choices( $string = '' ) {
+	
+	// bail early if already array
+	if( is_array($string) ) {
+		
+		return $string;
+	}
+	
 	
 	// vars
 	$array = array();
