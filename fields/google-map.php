@@ -121,6 +121,12 @@ class acf_field_google_map extends acf_field {
 		}
 		
 		
+		// hiden input
+		acf_hidden_input(array(
+			'type'	=> 'hidden',
+			'name'	=> $field['name'],
+		));
+		
 ?>
 <div <?php acf_esc_attr_e($atts); ?>>
 	
@@ -219,6 +225,34 @@ class acf_field_google_map extends acf_field {
 	
 	
 	/*
+	*  validate_value
+	*
+	*  description
+	*
+	*  @type	function
+	*  @date	11/02/2014
+	*  @since	5.0.0
+	*
+	*  @param	$post_id (int)
+	*  @return	$post_id (int)
+	*/
+	
+	function validate_value( $valid, $value, $field, $input ){
+		
+		if( empty($value) || empty($value['lat']) || empty($value['lng']) ) {
+			
+			return false;
+			
+		}
+		
+		
+		// return
+		return $valid;
+		
+	}
+	
+	
+	/*
 	*  update_value()
 	*
 	*  This filter is appied to the $value before it is updated in the db
@@ -243,6 +277,7 @@ class acf_field_google_map extends acf_field {
 		}
 		
 		
+		// return
 		return $value;
 	}
 }
