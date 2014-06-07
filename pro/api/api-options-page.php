@@ -219,12 +219,11 @@ function acf_get_options_pages() {
 		
 		
 		// finally update parent menu_slug
-		if( !empty($child) ) {
+		if( $child ) {
 			
 			$pages[ $i ]['menu_slug'] = $child;
 			
 		}
-		
 		
 	}	
 	
