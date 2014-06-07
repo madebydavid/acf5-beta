@@ -429,7 +429,7 @@ class acf_field_user extends acf_field {
 				
 				// append to array
 				$value[ $i ] = array();
-				$value[ $i ]['ID'] = $v;
+				$value[ $i ]['ID'] = $user_id;
 				$value[ $i ]['user_firstname'] = $user_data->user_firstname;
 				$value[ $i ]['user_lastname'] = $user_data->user_lastname;
 				$value[ $i ]['nickname'] = $user_data->nickname;
@@ -439,7 +439,7 @@ class acf_field_user extends acf_field {
 				$value[ $i ]['user_url'] = $user_data->user_url;
 				$value[ $i ]['user_registered'] = $user_data->user_registered;
 				$value[ $i ]['user_description'] = $user_data->user_description;
-				$value[ $i ]['user_avatar'] = get_avatar( $v );
+				$value[ $i ]['user_avatar'] = get_avatar( $user_id );
 				
 			}
 			
