@@ -159,7 +159,7 @@ function acf_get_options_pages() {
 		
 	}
 	
-	
+
 	foreach( $pages as $i => $page ) {
 			
 		// bail early if is child
@@ -219,10 +219,15 @@ function acf_get_options_pages() {
 		
 		
 		// finally update parent menu_slug
-		$pages[ $i ]['menu_slug'] = $child;
+		if( !empty($child) ) {
+			
+			$pages[ $i ]['menu_slug'] = $child;
+			
+		}
+		
 		
 	}	
-		
+	
 	
 	// return
 	return $pages;
