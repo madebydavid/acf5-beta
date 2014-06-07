@@ -18,25 +18,32 @@
 		init : function(){
 	    	
 	    	// reference
-	    	var _this = this;
+	    	var self = this;
 	    	
 	    	
 	    	// actions
 	    	acf.add_action('open_field sortstop', function( $el ){
 			    
-			    _this.update_field_parent( $el );
+			    self.update_field_parent( $el );
 				
 		    });
 		    
 		    acf.add_action('duplicate_field', function( $el ){
 			    
-			    _this.duplicate_field( $el );
+			    self.duplicate_field( $el );
 				
 		    });
 		    
 		    acf.add_action('delete_field', function( $el ){
 			    
-			    _this.delete_field( $el );
+			    self.delete_field( $el );
+				
+		    });
+		    
+		    // actions
+			acf.add_action('change_field_type', function( $el ){
+			    
+			    self.change_field_type( $el );
 				
 		    });
 		    
@@ -194,7 +201,31 @@
 		    	
 	    	});
 	    	
-    	}
+    	},
+    	
+    	
+    	/*
+    	*  change_field_type
+    	*
+    	*  This function is triggered when changing a field type
+    	*
+    	*  @type	function
+    	*  @date	7/06/2014
+    	*  @since	5.0.0
+    	*
+    	*  @param	$post_id (int)
+    	*  @return	$post_id (int)
+    	*/
+		
+		change_field_type : function( $el ) {
+			
+			$el.find('.field').each(function(){
+		    	
+		    	acf.field_group.delete_field( $(this), false );
+		    	
+	    	});
+			
+		}
 		
 	};
 	
