@@ -582,9 +582,9 @@ class acf_field_group {
 				
 				$terms = acf_get_taxonomy_terms( 'category' );
 				
-				if( !empty($terms['category']) ) {
+				if( !empty($terms) ) {
 					
-					$choices = $terms['category'];
+					$choices = array_pop($terms);
 					
 				}
 				

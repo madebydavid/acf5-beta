@@ -555,7 +555,7 @@ class acf_field_relationship extends acf_field {
 			<li style="width:<?php echo $width['post_type']; ?>%;">
 				<div class="inner">
 				<select class="filter" data-filter="post_type">
-					<option value=""><?php _e('All post types','acf'); ?></option>
+					<option value=""><?php _e('Select post type','acf'); ?></option>
 					<?php foreach( $post_types as $k => $v ): ?>
 						<option value="<?php echo $k; ?>"><?php echo $v; ?></option>
 					<?php endforeach; ?>
@@ -568,7 +568,7 @@ class acf_field_relationship extends acf_field {
 			<li style="width:<?php echo $width['taxonomy']; ?>%;">
 				<div class="inner">
 				<select class="filter" data-filter="taxonomy">
-					<option value=""><?php _e('All taxonomies','acf'); ?></option>
+					<option value=""><?php _e('Select taxonomy','acf'); ?></option>
 					<?php foreach( $term_groups as $k_opt => $v_opt ): ?>
 						<optgroup label="<?php echo $k_opt; ?>">
 							<?php foreach( $v_opt as $k => $v ): ?>

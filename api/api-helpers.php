@@ -1225,6 +1225,65 @@ function acf_get_taxonomies() {
 }
 
 
+function acf_get_pretty_taxonomies( $taxonomies = array() ) {
+	
+	// get post types
+	if( empty($taxonomies) ) {
+		
+		// get all custom post types
+		$taxonomies = acf_get_taxonomies();
+		
+	}
+	
+	
+	// get labels
+	$ref = array();
+	$r = array();
+	
+	foreach( array_keys($taxonomies) as $i ) {
+		
+		// vars
+		$taxonomy = acf_extract_var( $taxonomies, $i);
+		$obj = get_taxonomy( $taxonomy );
+		$name = $obj->labels->singular_name;
+		
+		
+		// append to r
+		$r[ $taxonomy ] = $name;
+		
+		
+		// increase counter
+		if( !isset($ref[ $name ]) ) {
+			
+			$ref[ $name ] = 0;
+			
+		}
+		
+		$ref[ $name ]++;
+	}
+	
+	
+	// get slugs
+	foreach( array_keys($r) as $i ) {
+		
+		// vars
+		$taxonomy = $r[ $i ];
+		
+		if( $ref[ $taxonomy ] > 1 ) {
+			
+			$r[ $i ] .= ' (' . $i . ')';
+			
+		}
+		
+	}
+	
+	
+	// return
+	return $r;
+	
+}
+
+
 /*
 *  acf_get_taxonomy_terms
 *
@@ -1238,40 +1297,36 @@ function acf_get_taxonomies() {
 *  @return	(array)
 */
 
-function acf_get_taxonomy_terms( $taxonomies = false ) {
-
-	// load all taxonomies if not specified in args
-	if( empty($taxonomies) ) {
-		
-		$taxonomies = acf_get_taxonomies();
-		
-	}
-	
+function acf_get_taxonomy_terms( $taxonomies = array() ) {
 	
 	// force array
 	$taxonomies = acf_force_type_array( $taxonomies );
-		
+	
+	
+	// get pretty taxonomy names
+	$taxonomies = acf_get_pretty_taxonomies( $taxonomies );
+	
 	
 	// vars
 	$r = array();
 	
 	
 	// populate $r
-	foreach( array_keys($taxonomies) as $i ) {
+	foreach( array_keys($taxonomies) as $taxonomy ) {
 		
 		// vars
-		$taxonomy = $taxonomies[ $i ];
+		$label = $taxonomies[ $taxonomy ];
 		$terms = get_terms( $taxonomy, array( 'hide_empty' => false ) );
 		
 		
 		if( !empty($terms) ) {
 			
-			$r[ $taxonomy ] = array();
+			$r[ $label ] = array();
 			
 			foreach( $terms as $term ) {
 			
 				$k = "{$taxonomy}:{$term->slug}"; 
-				$r[ $taxonomy ][ $k ] = $term->name;
+				$r[ $label ][ $k ] = $term->name;
 				
 			}
 			
