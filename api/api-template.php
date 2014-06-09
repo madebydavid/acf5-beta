@@ -1005,22 +1005,15 @@ function _acf_pre_save_post( $post_id, $form ) {
 	);
 	
 	
-	// validate post_id
+	// determin save data
 	if( is_numeric($post_id) ) {
 		
+		// update post
 		$save['ID'] = $post_id;
 		
-	}
-	
-	
-	// new?
-	if( $post_id == 'new_post' ) {
+	} elseif( $post_id == 'new_post' ) {
 		
-		// don't update
-		$update = false;
-		
-		
-		// new post defaults
+		// new post
 		$form['new_post'] = acf_parse_args( $form['new_post'], array(
 			'post_type' 	=> 'post',
 			'post_status'	=> 'draft',
@@ -1030,6 +1023,11 @@ function _acf_pre_save_post( $post_id, $form ) {
 		// merge in new post data
 		$save = array_merge($save, $form['new_post']);
 				
+	} else {
+		
+		// not post
+		return $post_id;
+		
 	}
 	
 	
@@ -1070,6 +1068,7 @@ function _acf_pre_save_post( $post_id, $form ) {
 	
 	// return
 	return $post_id;
+	
 }
 
 
@@ -1110,8 +1109,8 @@ function acf_form( $args = array() ) {
 		'new_post'				=> false,
 		'field_groups'			=> false,
 		'fields'				=> false,
-		'post_title'			=> true,
-		'post_content'			=> true,
+		'post_title'			=> false,
+		'post_content'			=> false,
 		'form'					=> true,
 		'form_attributes'		=> array(
 			'id'					=> 'post',
