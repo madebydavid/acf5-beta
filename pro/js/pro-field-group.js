@@ -40,7 +40,6 @@
 				
 		    });
 		    
-		    // actions
 			acf.add_action('change_field_type', function( $el ){
 			    
 			    self.change_field_type( $el );
@@ -51,6 +50,61 @@
 		    // modules
 		    this.repeater.init();
 	    	this.flexible_content.init();
+    	},
+    	
+    	
+    	/*
+    	*  fix_conditional_logic
+    	*
+    	*  This function will update sub field conditional logic rules after duplication
+    	*
+    	*  @type	function
+    	*  @date	10/06/2014
+    	*  @since	5.0.0
+    	*
+    	*  @param	$fields (jquery selection)
+    	*  @return	n/a
+    	*/
+    	
+    	fix_conditional_logic : function( $fields ){
+	    	
+	    	// build refernce
+			var ref = {};
+			
+			$fields.each(function(){
+				
+				ref[ $(this).attr('data-orig') ] = $(this).attr('data-key');
+				
+			});
+			
+	    	$fields.find('.conditional-logic-field').each(function(){
+		    	
+		    	// vars
+		    	var key = $(this).val();
+		    	
+		    	
+		    	// bail early if val is not a ref key
+		    	if( !(key in ref) ) {
+			    	
+			    	return;
+			    	
+		    	}
+		    	
+		    	
+		    	// add option if doesn't yet exist
+		    	if( ! $(this).find('option[value="' + ref[key] + '"]').exists() ) {
+			    	
+			    	$(this).append('<option value="' + ref[key] + '">' + ref[key] + '</option>');
+			    	
+		    	}
+		    	
+		    	
+		    	// set new val
+		    	$(this).val( ref[key] );
+		    	//console.log('setting new value to ' + ref[key]);
+		    	
+	    	});
+	    	
     	},
     	
     	
@@ -155,6 +209,7 @@
 			}
 			
 			
+			// loop over sub fields
 	    	$fields.each(function(){
 		    	
 		    	// vars
@@ -176,6 +231,9 @@
 		    	
 	    	});
 	    	
+	    	
+	    	// fix conditional logic rules
+	    	this.fix_conditional_logic( $fields );
 	    	
     	},
     	
@@ -509,7 +567,9 @@
 			this.wipe_layout( $new_tr );
 			
 			
-			$new_tr.find('.field').not('[data-key="acfcloneindex"]').each(function(){
+			// vars
+			$fields = $new_tr.find('.field').not('[data-key="acfcloneindex"]');
+			$fields.each(function(){
 				
 				// wipe
 				acf.field_group.wipe_field( $(this) );
@@ -527,6 +587,10 @@
 			
 			// allow acf to modify DOM
 			acf.do_action('after_duplicate', $tr, $new_tr);
+			
+			
+			// fix conditional logic rules
+			acf.field_group_pro.fix_conditional_logic( $fields );
 			
 			
 			// make sortbale

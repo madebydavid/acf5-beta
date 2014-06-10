@@ -721,10 +721,12 @@
 			
 			// vars
 			var old_id = $el.attr('data-id'), // use data attr for better compatibility with new fields
+				old_key = $el.attr('data-key'),
 				new_id = acf.get_uniqid('field_');
 			
 			
 			// give field a new id
+			$el.attr('data-orig', old_key);
 			$el.attr('data-key', new_id);
 			$el.attr('data-id', new_id);
 			
