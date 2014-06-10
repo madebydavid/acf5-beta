@@ -1,6 +1,18 @@
-<?php 
+<?php
 
-class acf_controller_post {
+/*
+*  ACF Post Form Class
+*
+*  All the logic for adding fields to posts
+*
+*  @class 		acf_form_post
+*  @package		ACF
+*  @subpackage	Forms
+*/
+
+if( ! class_exists('acf_form_post') ) :
+
+class acf_form_post {
 	
 	var $post_id	= 0,
 		$typenow	= '',
@@ -8,13 +20,13 @@ class acf_controller_post {
 	
 	
 	/*
-	*  Constructor
+	*  __construct
 	*
-	*  This function will construct all the neccessary actions and filters
+	*  This function will setup the class functionality
 	*
 	*  @type	function
-	*  @date	23/06/12
-	*  @since	3.1.8
+	*  @date	5/03/2014
+	*  @since	5.0.0
 	*
 	*  @param	n/a
 	*  @return	n/a
@@ -23,12 +35,16 @@ class acf_controller_post {
 	function __construct() {
 	
 		// actions
-		add_action( 'admin_enqueue_scripts',				array($this, 'admin_enqueue_scripts') );
-		add_action( 'save_post', 							array($this, 'save_post'), 10, 1 );
+		add_action('admin_enqueue_scripts',				array($this, 'admin_enqueue_scripts'));
+		
+		
+		// save
+		add_action('save_post', 						array($this, 'save_post'), 10, 1);
 		
 		
 		// ajax
-		add_action( 'wp_ajax_acf/post/get_field_groups',	array($this, 'get_field_groups') );
+		add_action('wp_ajax_acf/post/get_field_groups',	array($this, 'get_field_groups'));
+		
 	}
 	
 	
@@ -45,8 +61,8 @@ class acf_controller_post {
 	*  @return	(boolean)
 	*/
 	
-	function validate_page()
-	{
+	function validate_page() {
+		
 		// global
 		global $post, $pagenow, $typenow;
 		
@@ -81,12 +97,13 @@ class acf_controller_post {
 		
 		
 		// validate page (Shopp)
-		if( $pagenow == "admin.php" && isset( $_GET['page'] ) && $_GET['page'] == "shopp-products" && isset( $_GET['id'] ) )
-		{
+		if( $pagenow == "admin.php" && isset( $_GET['page'] ) && $_GET['page'] == "shopp-products" && isset( $_GET['id'] ) ) {
+			
 			$return = true;
 			
 			$this->post_id = absint( $_GET['id'] );
 			$this->typenow = 'shopp_product';
+			
 		}
 				
 		
@@ -109,12 +126,13 @@ class acf_controller_post {
 	*  @return	n/a
 	*/
 	
-	function admin_enqueue_scripts()
-	{
+	function admin_enqueue_scripts() {
+		
 		// validate page
-		if( ! $this->validate_page() )
-		{
+		if( ! $this->validate_page() ) {
+			
 			return;
+			
 		}
 
 		
@@ -123,8 +141,8 @@ class acf_controller_post {
 		
 		
 		// actions
-		add_action( 'acf/input/admin_head',		array($this,'admin_head') );
-		add_action( 'acf/input/admin_footer',	array($this,'admin_footer') );
+		add_action('acf/input/admin_head',		array($this,'admin_head'));
+		add_action('acf/input/admin_footer',	array($this,'admin_footer'));
 	}
 	
 	
@@ -152,10 +170,10 @@ class acf_controller_post {
 		
 		
 		// add meta boxes
-		if( !empty($field_groups) )
-		{
-			foreach( $field_groups as $i => $field_group )
-			{
+		if( !empty($field_groups) ) {
+			
+			foreach( $field_groups as $i => $field_group ) {
+				
 				// vars
 				$id = "acf-{$field_group['key']}";
 				$title = $field_group['title'];
@@ -168,9 +186,10 @@ class acf_controller_post {
 				
 				
 				// tweaks to vars
-				if( $context == 'side' )
-				{
+				if( $context == 'side' ) {
+					
 					$priority = 'core';
+				
 				}
 				
 				
@@ -204,11 +223,11 @@ class acf_controller_post {
 		
 		
 		// Allow 'acf_after_title' metabox position
-		add_action( 'edit_form_after_title', array($this, 'edit_form_after_title') );
+		add_action('edit_form_after_title', array($this, 'edit_form_after_title'));
 		
 		
 		// remove ACF from meta postbox
-		add_filter( 'is_protected_meta', array($this, 'is_protected_meta'), 10, 3 );
+		add_filter('is_protected_meta', array($this, 'is_protected_meta'), 10, 3);
 	}
 	
 	
@@ -274,15 +293,15 @@ class acf_controller_post {
 		
 		
 		// render fields, or render a replace-me div
-		if( $visibility )
-		{
+		if( $visibility ) {
+			
 			// load fields
 			$fields = acf_get_fields( $field_group );
 			
 			
 			// render
-			if( $field_group['label_placement'] == 'left' )
-			{
+			if( $field_group['label_placement'] == 'left' ) {
+				
 				?>
 				<table class="acf-table">
 					<tbody>
@@ -290,21 +309,22 @@ class acf_controller_post {
 					</tbody>
 				</table>
 				<?php
-			}
-			else
-			{
+				
+			} else {
+				
 				acf_render_fields( $this->post_id, $fields, 'div', $field_group['instruction_placement'] );
+				
 			}
 			
 			
-		}
-		else
-		{
+		} else {
+			
 			// update classes
 			$class .= ' acf-hidden';
 			$toggle_class .= ' acf-hidden';
 			
 			echo '<div class="acf-replace-with-fields"><div class="acf-loading"></div></div>';
+			
 		}
 		
 		
@@ -404,8 +424,8 @@ class acf_controller_post {
 				
 				
 				// render
-				if( $field_group['label_placement'] == 'left' )
-				{
+				if( $field_group['label_placement'] == 'left' ) {
+					
 					?>
 					<table class="acf-table">
 						<tbody>
@@ -413,10 +433,11 @@ class acf_controller_post {
 						</tbody>
 					</table>
 					<?php
-				}
-				else
-				{
+					
+				} else {
+					
 					acf_render_fields( $options['post_id'], $fields, 'div', $field_group['instruction_placement'] );
+				
 				}
 				
 				
@@ -459,34 +480,37 @@ class acf_controller_post {
 	*  @return	$post_id (int)
 	*/
 	
-	function save_post( $post_id )
-	{	
+	function save_post( $post_id ) {
 		
 		// do not save if this is an auto save routine
-		if( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE )
-		{
+		if( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE ) {
+			
 			return $post_id;
+			
 		}
 		
 		
 		// verify and remove nonce
-		if( !acf_verify_nonce('post', $post_id) )
-		{
+		if( !acf_verify_nonce('post', $post_id) ) {
+			
 			return $post_id;
+			
 		}
 		
 		
 		// validate and save
-		if( get_post_status($post_id) == 'publish' )
-		{
-			if( acf_validate_save_post(true) )
-			{
+		if( get_post_status($post_id) == 'publish' ) {
+			
+			if( acf_validate_save_post(true) ) {
+				
 				acf_save_post( $post_id );
+				
 			}
-		}
-		else
-		{
+			
+		} else {
+			
 			acf_save_post( $post_id );
+			
 		}
 		
 		
@@ -533,6 +557,8 @@ class acf_controller_post {
 			
 }
 
-new acf_controller_post();
+new acf_form_post();
+
+endif;
 
 ?>
