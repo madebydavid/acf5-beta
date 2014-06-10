@@ -1,33 +1,46 @@
-<?php 
+<?php
 
-class acf_controller_taxonomy {
+/*
+*  ACF Taxonomy Form Class
+*
+*  All the logic for adding fields to taxonomy terms
+*
+*  @class 		acf_form_taxonomy
+*  @package		ACF
+*  @subpackage	Forms
+*/
+
+if( ! class_exists('acf_form_taxonomy') ) :
+
+class acf_form_taxonomy {
+	
 	
 	/*
-	*  Constructor
+	*  __construct
 	*
-	*  This function will construct all the neccessary actions and filters
+	*  This function will setup the class functionality
 	*
 	*  @type	function
-	*  @date	23/06/12
-	*  @since	3.1.8
+	*  @date	5/03/2014
+	*  @since	5.0.0
 	*
-	*  @param	N/A
-	*  @return	N/A
+	*  @param	n/a
+	*  @return	n/a
 	*/
 	
-	function __construct()
-	{
+	function __construct() {
+		
 		// actions
-		add_action( 'admin_enqueue_scripts',		array( $this, 'admin_enqueue_scripts' ) );
+		add_action('admin_enqueue_scripts',	array($this, 'admin_enqueue_scripts'));
 		
 		
 		// save
-		add_action( 'create_term',					array( $this, 'save_term'), 10, 3 );
-		add_action( 'edited_term',					array( $this, 'save_term'), 10, 3 );
+		add_action('create_term',			array($this, 'save_term'), 10, 3);
+		add_action('edited_term',			array($this, 'save_term'), 10, 3);
 		
 		
 		// delete
-		add_action( 'delete_term',					array( $this, 'delete_term'), 10, 4 );
+		add_action('delete_term',			array($this, 'delete_term'), 10, 4);
 		
 	}
 	
@@ -41,29 +54,26 @@ class acf_controller_taxonomy {
 	*  @date	23/06/12
 	*  @since	3.1.8
 	*
-	*  @param	N/A
+	*  @param	n/a
 	*  @return	(boolean)
 	*/
 	
-	function validate_page()
-	{
+	function validate_page() {
+		
 		// global
 		global $pagenow;
 		
 		
-		// vars
-		$r = false;
-		
-		
 		// validate page
-		if( $pagenow == 'edit-tags.php' )
-		{
-			$r = true;
+		if( $pagenow == 'edit-tags.php' ) {
+			
+			return true;
+			
 		}
 		
 		
 		// return
-		return $r;
+		return false;		
 	}
 	
 	
@@ -84,9 +94,10 @@ class acf_controller_taxonomy {
 	function admin_enqueue_scripts() {
 		
 		// validate page
-		if( ! $this->validate_page() )
-		{
+		if( ! $this->validate_page() ) {
+			
 			return;
+			
 		}
 		
 		
@@ -100,8 +111,8 @@ class acf_controller_taxonomy {
 		
 		
 		// render
-		add_action( "{$taxonomy}_add_form_fields", 		array( $this, 'add_term' ), 10, 1 );
-		add_action( "{$taxonomy}_edit_form", 			array( $this, 'edit_term' ), 10, 2 );
+		add_action("{$taxonomy}_add_form_fields", 	array( $this, 'add_term' ), 10, 1);
+		add_action("{$taxonomy}_edit_form", 		array( $this, 'edit_term' ), 10, 2);
 		
 	}
 	
@@ -133,80 +144,84 @@ class acf_controller_taxonomy {
 		
 		
 		// render
-		if( !empty($field_groups) ):
+		if( !empty($field_groups) ) {
 			
 			acf_form_data(array( 
 				'post_id'	=> $post_id, 
 				'nonce'		=> 'taxonomy',
 			));
 			
-			foreach( $field_groups as $field_group ): 
+			foreach( $field_groups as $field_group ) {
 				
 				$fields = acf_get_fields( $field_group );
 
 				acf_render_fields( $post_id, $fields, 'div', 'field' );
 				
-			endforeach; 
+			}
 			
-				?>
-			<script type="text/javascript">
-			(function($) {
+?>
+<script type="text/javascript">
+(function($) {
+
+	$(document).ready(function(){
+		
+		// update acf validation class
+		acf.validation.error_class = 'form-invalid';
+		
+		
+		// events
+		$('#submit').on('click', function( e ){
 			
-				$(document).ready(function(){
-					
-					// update acf validation class
-					acf.validation.error_class = 'form-invalid';
-					
-					
-					// events
-					$('#submit').on('click', function( e ){
-						
-						// bail early if this form does not contain ACF data
-						if( ! $('#addtag').find('#acf-form-data').exists() )
-						{
-							return true;
-						}
-						
-						
-						// ignore this submit?
-						if( acf.validation.ignore == 1 )
-						{
-							acf.validation.ignore = 0;
-							return true;
-						}
-						
+			// bail early if this form does not contain ACF data
+			if( ! $('#addtag').find('#acf-form-data').exists() ) {
 				
-						// bail early if disabled
-						if( acf.validation.active == 0 )
-						{
-							return true;
-						}
-						
-						
-						// stop WP JS validation
-						e.stopImmediatePropagation();
-						
-						
-						// store submit trigger so it will be clicked if validation is passed
-						acf.validation.$trigger = $(this);
-						
-						
-						// run validation
-						acf.validation.fetch( $('#addtag') );
-						
-						
-						// stop all other click events on this input
-						return false;
-					});
-				
-				});
- 
-				
-			})(jQuery);	
-			</script>
-			<?php
+				return true;
 			
-		endif;
+			}
+			
+			
+			// ignore this submit?
+			if( acf.validation.ignore == 1 ) {
+			
+				acf.validation.ignore = 0;
+				return true;
+			
+			}
+			
+	
+			// bail early if disabled
+			if( acf.validation.active == 0 ) {
+			
+				return true;
+			
+			}
+			
+			
+			// stop WP JS validation
+			e.stopImmediatePropagation();
+			
+			
+			// store submit trigger so it will be clicked if validation is passed
+			acf.validation.$trigger = $(this);
+			
+			
+			// run validation
+			acf.validation.fetch( $('#addtag') );
+			
+			
+			// stop all other click events on this input
+			return false;
+			
+		});
+	
+	});
+
+	
+})(jQuery);	
+</script>
+<?php
+			
+		}
 		
 	}
 	
@@ -224,8 +239,8 @@ class acf_controller_taxonomy {
 	*  @return	$post_id (int)
 	*/
 	
-	function edit_term( $term, $taxonomy )
-	{
+	function edit_term( $term, $taxonomy ) {
+		
 		// vars
 		$post_id = "{$taxonomy}_{$term->term_id}";
 		$args = array(
@@ -238,14 +253,14 @@ class acf_controller_taxonomy {
 		
 		
 		// render
-		if( !empty($field_groups) ):
+		if( !empty($field_groups) ) {
 			
 			acf_form_data(array( 
 				'post_id'	=> $post_id, 
 				'nonce'		=> 'taxonomy' 
 			));
 			
-			foreach( $field_groups as $field_group ): 
+			foreach( $field_groups as $field_group ) {
 				
 				$fields = acf_get_fields( $field_group );
 				
@@ -260,9 +275,9 @@ class acf_controller_taxonomy {
 				</table>
 				<?php 
 				
-			endforeach; 
+			}
 		
-		endif;
+		}
 		
 	}
 	
@@ -283,16 +298,18 @@ class acf_controller_taxonomy {
 	function save_term( $term_id, $tt_id, $taxonomy ) {
 		
 		// verify and remove nonce
-		if( ! acf_verify_nonce('taxonomy') )
-		{
+		if( ! acf_verify_nonce('taxonomy') ) {
+			
 			return $term_id;
+		
 		}
 		
 	    
 	    // save data
-	    if( acf_validate_save_post(true) )
-		{
-			acf_save_post( "{$taxonomy}_{$term_id}" );
+	    if( acf_validate_save_post(true) ) {
+	    
+			acf_save_post("{$taxonomy}_{$term_id}");
+		
 		}
 			
 	}
@@ -311,18 +328,21 @@ class acf_controller_taxonomy {
 	*  @return	$post_id (int)
 	*/
 	
-	function delete_term( $term, $tt_id, $taxonomy, $deleted_term )
-	{
+	function delete_term( $term, $tt_id, $taxonomy, $deleted_term ) {
+		
 		global $wpdb;
 		
 		$values = $wpdb->query($wpdb->prepare(
 			"DELETE FROM $wpdb->options WHERE option_name LIKE %s",
 			'%' . $taxonomy . '_' . $term . '%'
 		));
+		
 	}
 			
 }
 
-new acf_controller_taxonomy();
+new acf_form_taxonomy();
+
+endif;
 
 ?>
