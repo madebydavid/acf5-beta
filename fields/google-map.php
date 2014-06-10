@@ -120,13 +120,6 @@ class acf_field_google_map extends acf_field {
 			
 		}
 		
-		
-		// hiden input
-		acf_hidden_input(array(
-			'type'	=> 'hidden',
-			'name'	=> $field['name'],
-		));
-		
 ?>
 <div <?php acf_esc_attr_e($atts); ?>>
 	

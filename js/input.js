@@ -5174,7 +5174,7 @@ acf.add_action('ready append', function( $el ){
 		fetch : function( $form ){
 			
 			// reference
-			var _this = this;
+			var self = this;
 			
 			
 			// vars
@@ -5193,7 +5193,7 @@ acf.add_action('ready append', function( $el ){
 				dataType	: 'json',
 				success		: function( json ){
 					
-					_this.complete( $form, json );
+					self.complete( $form, json );
 					
 				}
 			});
@@ -5207,7 +5207,7 @@ acf.add_action('ready append', function( $el ){
 			
 			
 			// reference
-			var _this = this;
+			var self = this;
 			
 			
 			// remove previous error message
@@ -5279,17 +5279,34 @@ if( ! this.$trigger )
 			
 			// show field error messages
 			if( json.errors ) {
-			
-				$.each( json.errors, function( k, item ){
 				
-					var $input = $form.find('[name="' + item.input + '"]').first(),
-						$field = acf.get_field_wrap( $input );
+				for( var i in json.errors ) {
+					
+					// get error
+					var error = json.errors[ i ];
+					
+					
+					// get input
+					var $input = $form.find('[name="' + error.input + '"]').first();
+					
+					
+					// if $_POST value was an array, this $input may not exist
+					if( ! $input.exists() ) {
+						
+						$input = $form.find('[name^="' + error.input + '"]').first();
+						
+					}
+					
+					
+					// now get field
+					var $field = acf.get_field_wrap( $input );
 					
 					
 					// add error
-					_this.add_error( $field, item.message );
+					self.add_error( $field, error.message );
 					
-				});
+					
+				}
 			
 			}
 			
@@ -5297,13 +5314,13 @@ if( ! this.$trigger )
 		
 		add_events : function(){
 			
-			var _this = this;
+			var self = this;
 			
 			
 			// focus
 			$(document).on('focus click change', '.acf-field[data-required="1"] input, .acf-field[data-required="1"] textarea, .acf-field[data-required="1"] select', function( e ){
 
-				_this.remove_error( $(this).closest('.acf-field') );
+				self.remove_error( $(this).closest('.acf-field') );
 				
 			});
 			
@@ -5311,8 +5328,8 @@ if( ! this.$trigger )
 			// click save
 			$(document).on('click', '#save-post', function(){
 				
-				_this.ignore = 1;
-				_this.$trigger = $(this);
+				self.ignore = 1;
+				self.$trigger = $(this);
 				
 			});
 			
@@ -5320,8 +5337,8 @@ if( ! this.$trigger )
 			// click preview
 			$(document).on('click', '#post-preview', function(){
 				
-				_this.ignore = 1;
-				_this.$trigger = $(this);
+				self.ignore = 1;
+				self.$trigger = $(this);
 				
 			});
 			
@@ -5329,7 +5346,7 @@ if( ! this.$trigger )
 			// click publish
 			$(document).on('click', '#submit', function(){
 				
-				_this.$trigger = $(this);
+				self.$trigger = $(this);
 				
 			});
 			
@@ -5337,7 +5354,7 @@ if( ! this.$trigger )
 			// click publish
 			$(document).on('click', '#publish', function(){
 				
-				_this.$trigger = $(this);
+				self.$trigger = $(this);
 				
 			});
 			
@@ -5353,15 +5370,15 @@ if( ! this.$trigger )
 				
 				
 				// ignore this submit?
-				if( _this.ignore == 1 )
+				if( self.ignore == 1 )
 				{
-					_this.ignore = 0;
+					self.ignore = 0;
 					return true;
 				}
 				
 				
 				// bail early if disabled
-				if( _this.active == 0 )
+				if( self.active == 0 )
 				{
 					return true;
 				}
@@ -5372,7 +5389,7 @@ if( ! this.$trigger )
 				
 				
 				// run validation
-				_this.fetch( $(this) );
+				self.fetch( $(this) );
 								
 			});
 			
