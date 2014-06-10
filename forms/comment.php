@@ -1,87 +1,48 @@
-<?php 
+<?php
 
-class acf_controller_comment {
-	
-	/*
-	*  Constructor
-	*
-	*  This function will construct all the neccessary actions and filters
-	*
-	*  @type	function
-	*  @date	23/06/12
-	*  @since	3.1.8
-	*
-	*  @param	N/A
-	*  @return	N/A
-	*/
-	
-	function __construct()
-	{
-		// actions
-		add_action( 'admin_enqueue_scripts',			array( $this, 'admin_enqueue_scripts' ) );
-		
-		
-		// render
-		add_action( 'comment_form_logged_in_after',		array( $this, 'comment_form_after_fields') );
-		add_action( 'comment_form_after_fields',		array( $this, 'comment_form_after_fields') );
+/*
+*  ACF Comment Form Class
+*
+*  All the logic for adding fields to comments
+*
+*  @class 		acf_form_comment
+*  @package		ACF
+*  @subpackage	Forms
+*/
 
-		
-		// save
-		add_action( 'edit_comment', 					array( $this, 'save_comment' ), 10, 1 );
-		add_action( 'comment_post', 					array( $this, 'save_comment' ), 10, 1 );
-		
-	}
+if( ! class_exists('acf_form_comment') ) :
+
+class acf_form_comment {
 	
 	
 	/*
-	*  comment_form_after_fields
+	*  __construct
 	*
-	*  This function will add fields to the front end comment form
+	*  This function will setup the class functionality
 	*
 	*  @type	function
-	*  @date	19/10/13
+	*  @date	5/03/2014
 	*  @since	5.0.0
 	*
 	*  @param	n/a
 	*  @return	n/a
 	*/
 	
-	function comment_form_after_fields() {
+	function __construct() {
 		
-		// vars
-		$post_id = "comment_0";
+		// actions
+		add_action( 'admin_enqueue_scripts',			array( $this, 'admin_enqueue_scripts' ) );
+		
+		
+		// render
+		add_action( 'comment_form_logged_in_after',		array( $this, 'add_comment') );
+		add_action( 'comment_form_after_fields',		array( $this, 'add_comment') );
 
 		
-		// get field groups
-		$field_groups = acf_get_field_groups(array(
-			'comment' => 'new'
-		));
+		// save
+		add_action( 'edit_comment', 					array( $this, 'save_comment' ), 10, 1 );
+		add_action( 'comment_post', 					array( $this, 'save_comment' ), 10, 1 );
 		
-		
-		if( !empty($field_groups) ):
-			
-			// render post data
-			acf_form_data(array( 
-				'post_id'	=> $post_id, 
-				'nonce'		=> 'comment' 
-			));
-			
-			
-			foreach( $field_groups as $field_group ): 
-				
-				$fields = acf_get_fields( $field_group );
-				
-				?>
-				<table class="form-table">
-					<tbody>
-						<?php acf_render_fields( $post_id, $fields, 'tr', 'field' ); ?>
-					</tbody>
-				</table>
-				<?php
-				
-			endforeach; 
-		
-		endif;
 	}
 	
 	
@@ -94,29 +55,26 @@ class acf_controller_comment {
 	*  @date	23/06/12
 	*  @since	3.1.8
 	*
-	*  @param	N/A
+	*  @param	n/a
 	*  @return	(boolean)
 	*/
 	
-	function validate_page()
-	{
+	function validate_page() {
+		
 		// global
 		global $pagenow;
 		
 		
-		// vars
-		$r = false;
-		
-		
 		// validate page
-		if( $pagenow == 'comment.php' )
-		{
-			$r = true;
+		if( $pagenow == 'comment.php' ) {
+			
+			return true;
+			
 		}
 		
 		
 		// return
-		return $r;
+		return false;		
 	}
 	
 	
@@ -130,16 +88,17 @@ class acf_controller_comment {
 	*  @date	26/01/13
 	*  @since	3.6.0
 	*
-	*  @param	N/A
-	*  @return	N/A
+	*  @param	n/a
+	*  @return	n/a
 	*/
 	
 	function admin_enqueue_scripts() {
 		
 		// validate page
-		if( ! $this->validate_page() )
-		{
+		if( ! $this->validate_page() ) {
+		
 			return;
+			
 		}
 		
 		
@@ -148,13 +107,13 @@ class acf_controller_comment {
 		
 		
 		// actions
-		add_action( 'add_meta_boxes_comment', array($this, 'add_meta_boxes_comment'), 10, 1 );
+		add_action( 'add_meta_boxes_comment', array($this, 'edit_comment'), 10, 1 );
 
 	}
 	
 	
 	/*
-	*  add_meta_boxes_comment
+	*  edit_comment
 	*
 	*  This function is run on the admin comment.php page and will render the ACF fields within custom metaboxes to look native
 	*
@@ -166,7 +125,7 @@ class acf_controller_comment {
 	*  @return	n/a
 	*/
 	
-	function add_meta_boxes_comment( $comment ) {
+	function edit_comment( $comment ) {
 		
 		// vars
 		$post_id = "comment_{$comment->comment_ID}";
@@ -179,7 +138,7 @@ class acf_controller_comment {
 		
 		
 		// render
-		if( !empty($field_groups) ):
+		if( !empty($field_groups) ) {
 		
 			// render post data
 			acf_form_data(array( 
@@ -188,51 +147,80 @@ class acf_controller_comment {
 			));
 			
 			
-			foreach( $field_groups as $field_group ): 
+			foreach( $field_groups as $field_group ) {
 				
-				$this->render_meta_box( $comment, $field_group );
+				// load fields
+				$fields = acf_get_fields( $field_group );
 				
-			endforeach; 
+				?>
+				<div id="acf-<?php echo $field_group['ID']; ?>" class="stuffbox editcomment">
+					<h3><?php echo $field_group['title']; ?></h3>
+					<div class="inside">
+						<table class="form-table">
+							<tbody>
+								<?php acf_render_fields( $post_id, $fields, 'tr', 'field' ); ?>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<?php
+				
+			}
 		
-		endif;
+		}
 		
 	}
 	
 	
 	/*
-	*  render_meta_box
+	*  add_comment
 	*
-	*  This function is used by 'add_meta_boxes_comment' to create the native looking metaboxes
+	*  This function will add fields to the front end comment form
 	*
 	*  @type	function
 	*  @date	19/10/13
 	*  @since	5.0.0
 	*
-	*  @param	$post_id (int)
-	*  @return	$post_id (int)
+	*  @param	n/a
+	*  @return	n/a
 	*/
 	
-	function render_meta_box( $comment, $field_group ) {
+	function add_comment() {
 		
 		// vars
-		$post_id = "comment_{$comment->comment_ID}";
+		$post_id = "comment_0";
+
+		
+		// get field groups
+		$field_groups = acf_get_field_groups(array(
+			'comment' => 'new'
+		));
 		
 		
-		// load fields
-		$fields = acf_get_fields( $field_group );
-		
-		?>
-		<div id="acf-<?php echo $field_group['ID']; ?>" class="stuffbox editcomment">
-			<h3><?php echo $field_group['title']; ?></h3>
-			<div class="inside">
+		if( !empty($field_groups) ) {
+			
+			// render post data
+			acf_form_data(array( 
+				'post_id'	=> $post_id, 
+				'nonce'		=> 'comment' 
+			));
+			
+			
+			foreach( $field_groups as $field_group ) {
+				
+				$fields = acf_get_fields( $field_group );
+				
+				?>
 				<table class="form-table">
 					<tbody>
 						<?php acf_render_fields( $post_id, $fields, 'tr', 'field' ); ?>
 					</tbody>
 				</table>
-			</div>
-		</div>
-		<?php
+				<?php
+				
+			}
+		
+		}
 		
 	}
 	
@@ -240,35 +228,39 @@ class acf_controller_comment {
 	/*
 	*  save_comment
 	*
-	*  description
+	*  This function will save the comment data
 	*
 	*  @type	function
 	*  @date	19/10/13
 	*  @since	5.0.0
 	*
-	*  @param	$post_id (int)
-	*  @return	$post_id (int)
+	*  @param	comment_id (int)
+	*  @return	n/a
 	*/
 	
 	function save_comment( $comment_id ) {
 		
-		// verify and remove nonce
-		if( ! acf_verify_nonce('comment') )
-		{
+		// bail early if not valid nonce
+		if( ! acf_verify_nonce('comment') ) {
+		
 			return $comment_id;
+			
 		}
 		
 	    
-	    // save data
-	    if( acf_validate_save_post(true) )
-		{
-			acf_save_post( "comment_{$comment_id}" );		
+	    // validate and save
+	    if( acf_validate_save_post(true) ) {
+	    
+			acf_save_post( "comment_{$comment_id}" );	
+			
 		}
-		
+				
 	}
 			
 }
 
-new acf_controller_comment();
+new acf_form_comment();
+
+endif;
 
 ?>

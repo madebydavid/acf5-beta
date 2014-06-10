@@ -5,14 +5,14 @@
 *
 *  All the logic for adding fields to attachments
 *
-*  @class 		acf_attachment_form
+*  @class 		acf_form_attachment
 *  @package		ACF
 *  @subpackage	Forms
 */
 
-if( ! class_exists('acf_attachment_form') ) :
+if( ! class_exists('acf_form_attachment') ) :
 
-class acf_attachment_form {
+class acf_form_attachment {
 	
 	
 	/*
@@ -31,12 +31,15 @@ class acf_attachment_form {
 	function __construct() {
 		
 		// actions
-		add_action('admin_enqueue_scripts',		array($this, 'admin_enqueue_scripts'));
+		add_action('admin_enqueue_scripts',			array($this, 'admin_enqueue_scripts'));
 		
 		
-		// filters
-		add_filter('attachment_fields_to_edit', array($this, 'attachment_fields_to_edit'), 10, 2);
-		add_filter('attachment_fields_to_save', array($this, 'attachment_fields_to_save'), 10, 2);
+		// render
+		add_filter('attachment_fields_to_edit', 	array($this, 'edit_attachment'), 10, 2);
+		
+		
+		// save
+		add_filter('attachment_fields_to_save', 	array($this, 'save_attachment'), 10, 2);
 		
 	}
 	
@@ -104,7 +107,7 @@ class acf_attachment_form {
 	
 	
 	/*
-	*  attachment_fields_to_edit
+	*  edit_attachment
 	*
 	*  description
 	*
@@ -116,7 +119,7 @@ class acf_attachment_form {
 	*  @return	$post_id (int)
 	*/
 	
-	function attachment_fields_to_edit( $form_fields, $post ) {
+	function edit_attachment( $form_fields, $post ) {
 		
 		// vars
 		$el = 'tr';
@@ -229,7 +232,7 @@ class acf_attachment_form {
 	*  @return	$post_id (int)
 	*/
 	
-	function attachment_fields_to_save( $post, $attachment ) {
+	function save_attachment( $post, $attachment ) {
 		
 		// bail early if not valid nonce
 		if( ! acf_verify_nonce('attachment') ) {
@@ -255,7 +258,7 @@ class acf_attachment_form {
 			
 }
 
-new acf_attachment_form();
+new acf_form_attachment();
 
 endif;
 
