@@ -1,28 +1,42 @@
-<?php 
+<?php
 
-class acf_controller_attachment {
+/*
+*  ACF Attachment Form Class
+*
+*  All the logic for adding fields to attachments
+*
+*  @class 		acf_attachment_form
+*  @package		ACF
+*  @subpackage	Forms
+*/
+
+if( ! class_exists('acf_attachment_form') ) :
+
+class acf_attachment_form {
+	
 	
 	/*
-	*  Constructor
+	*  __construct
 	*
-	*  This function will construct all the neccessary actions and filters
+	*  This function will setup the class functionality
 	*
 	*  @type	function
-	*  @date	23/06/12
-	*  @since	3.1.8
+	*  @date	5/03/2014
+	*  @since	5.0.0
 	*
-	*  @param	N/A
-	*  @return	N/A
+	*  @param	n/a
+	*  @return	n/a
 	*/
 	
-	function __construct()
-	{
+	function __construct() {
+		
 		// actions
+		add_action('admin_enqueue_scripts',		array($this, 'admin_enqueue_scripts'));
+		
+		
+		// filters
 		add_filter('attachment_fields_to_edit', array($this, 'attachment_fields_to_edit'), 10, 2);
-		add_filter('attachment_fields_to_save', array($this, 'save_attachment'), 10, 2);
-		
-		add_action('admin_enqueue_scripts',		array( $this, 'admin_enqueue_scripts' ));
-		
+		add_filter('attachment_fields_to_save', array($this, 'attachment_fields_to_save'), 10, 2);
 		
 	}
 	
@@ -40,25 +54,22 @@ class acf_controller_attachment {
 	*  @return	(boolean)
 	*/
 	
-	function validate_page()
-	{
+	function validate_page() {
+		
 		// global
-		global $typenow;
+		global $pagenow, $typenow;
 		
 		
-		// vars
-		$return = false;
-		
-		
-		if( $typenow === 'attachment' ) {
+		// validate page
+		if( $pagenow === 'post.php' && $typenow === 'attachment' ) {
 			
-			$return = true;
+			return true;
 			
 		}
-						
+		
 		
 		// return
-		return $return;
+		return false;		
 	}
 	
 	
@@ -78,7 +89,7 @@ class acf_controller_attachment {
 	
 	function admin_enqueue_scripts() {
 		
-		// validate page
+		// bail early if not validt page
 		if( !$this->validate_page() ) {
 			
 			return;
@@ -139,12 +150,32 @@ class acf_controller_attachment {
 			));
 			
 			
+			if( $this->validate_page() ) {
+				
+				echo '<style type="text/css">
+					tr.acf-field {
+						display: block;
+						margin: 0 0 13px;
+					}
+					tr.acf-field td.acf-label {
+						display: block;
+						margin: 0;
+					}
+					tr.acf-field td.acf-input {
+						display: block;
+						margin: 0;
+					}
+				</style>';
+				
+			}
+			
+			
 			// $el
-			if( $el == 'tr' ) {
+			//if( $el == 'tr' ) {
 				
 				echo '</td></tr>';
 				
-			}
+			//}
 			
 			
 			foreach( $field_groups as $field_group ) {
@@ -157,11 +188,11 @@ class acf_controller_attachment {
 			
 			
 			// $el
-			if( $el == 'tr' ) {
+			//if( $el == 'tr' ) {
 				
 				echo '<tr class="compat-field-acf-blank"><td>';
 				
-			}
+			//}
 			
 			
 			$html = ob_get_contents();
@@ -175,50 +206,7 @@ class acf_controller_attachment {
 	   			'input' => 'html',
 	   			'html' => $html
 			);
-
-			
-			/*
-
-			foreach( $field_groups as $field_group ) {
-				
-				$fields = acf_get_fields( $field_group );
-				
-				if( !empty($fields) ) {
-					
-					foreach( $fields as $field ) {
 						
-						// load value
-						if( $post_id && empty($field['value']) )
-						{
-							$field['value'] = acf_get_value( $post_id, $field, true );
-						} 
-						
-						
-						// set prefix for correct post name (prefix + key)
-						$field['prefix'] = 'acf';
-						
-						
-						// get acf_form_data
-						ob_start();
-						
-							acf_form_data(array( 
-								'post_id'	=> $post_id, 
-								'nonce'		=> 'attachment',
-							));
-						
-							$html = ob_get_contents();
-						
-						ob_end_clean();
-						
-					}
-					
-				}
-				
-				
-				
-			}
-*/
-			
 		}
 		
 		
@@ -241,19 +229,21 @@ class acf_controller_attachment {
 	*  @return	$post_id (int)
 	*/
 	
-	function save_attachment( $post, $attachment ) {
+	function attachment_fields_to_save( $post, $attachment ) {
 		
-		// verify and remove nonce
-		if( ! acf_verify_nonce('attachment') )
-		{
+		// bail early if not valid nonce
+		if( ! acf_verify_nonce('attachment') ) {
+		
 			return $post;
+			
 		}
 		
 	    
-	    // save data
-	    if( acf_validate_save_post(true) )
-		{
+	    // validate and save
+	    if( acf_validate_save_post(true) ) {
+	    
 			acf_save_post( $post['ID'] );
+			
 		}
 		
 		
@@ -265,6 +255,8 @@ class acf_controller_attachment {
 			
 }
 
-new acf_controller_attachment();
+new acf_attachment_form();
+
+endif;
 
 ?>
