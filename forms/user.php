@@ -1,31 +1,44 @@
-<?php 
+<?php
 
-class acf_controller_user {
+/*
+*  ACF User Form Class
+*
+*  All the logic for adding fields to users
+*
+*  @class 		acf_form_user
+*  @package		ACF
+*  @subpackage	Forms
+*/
+
+if( ! class_exists('acf_form_user') ) :
+
+class acf_form_user {
+	
 	
 	/*
-	*  Constructor
+	*  __construct
 	*
-	*  This function will construct all the neccessary actions and filters
+	*  This function will setup the class functionality
 	*
 	*  @type	function
-	*  @date	23/06/12
-	*  @since	3.1.8
+	*  @date	5/03/2014
+	*  @since	5.0.0
 	*
-	*  @param	N/A
-	*  @return	N/A
+	*  @param	n/a
+	*  @return	n/a
 	*/
 	
-	function __construct()
-	{
+	function __construct() {
+		
 		// actions
-		add_action( 'admin_enqueue_scripts',		array( $this, 'admin_enqueue_scripts' ) );
-		add_action( 'login_form_register', 			array( $this, 'admin_enqueue_scripts' ) );
+		add_action('admin_enqueue_scripts',			array($this, 'admin_enqueue_scripts'));
+		add_action('login_form_register', 			array($this, 'admin_enqueue_scripts'));
 		
 		// render
-		add_action( 'show_user_profile', 			array( $this, 'edit_profile' ) );
-		add_action( 'edit_user_profile',			array( $this, 'edit_user' ) );
-		add_action( 'user_new_form',				array( $this, 'user_new_form' ) );
-		add_action( 'register_form',				array( $this, 'register_user' ) );
+		add_action('show_user_profile', 			array($this, 'edit_profile'));
+		add_action('edit_user_profile',				array($this, 'edit_user'));
+		add_action('user_new_form',					array($this, 'user_new_form'));
+		add_action('register_form',					array($this, 'register_user'));
 		
 		// save
 		//add_action('edit_user_profile_update',	array($this, 'save_user'));
@@ -49,25 +62,22 @@ class acf_controller_user {
 	*  @return	(boolean)
 	*/
 	
-	function validate_page()
-	{
+	function validate_page() {
+		
 		// global
 		global $pagenow;
 		
 		
-		// vars
-		$return = false;
-		
-		
 		// validate page
-		if( in_array( $pagenow, array('profile.php', 'user-edit.php', 'user-new.php', 'wp-login.php') ) )
-		{
-			$return = true;
+		if( in_array( $pagenow, array('profile.php', 'user-edit.php', 'user-new.php', 'wp-login.php') ) ) {
+			
+			return true;
+		
 		}
 		
 		
 		// return
-		return $return;
+		return false;
 	}
 	
 	
@@ -85,17 +95,19 @@ class acf_controller_user {
 	*  @return	N/A
 	*/
 	
-	function admin_enqueue_scripts()
-	{
+	function admin_enqueue_scripts() {
+		
 		// validate page
-		if( ! $this->validate_page() )
-		{
+		if( ! $this->validate_page() ) {
+		
 			return;
+			
 		}
 
 		
 		// load acf scripts
 		acf_enqueue_scripts();
+		
 	}
 	
 	
@@ -137,6 +149,7 @@ class acf_controller_user {
 		
 		// render
 		$this->render( 0, 'register', 'div' );
+		
 	}
 	
 	
@@ -205,9 +218,10 @@ class acf_controller_user {
 		
 		
 		// show title
-		if( $user_form == 'register' )
-		{
+		if( $user_form == 'register' ) {
+			
 			$show_title = false;
+		
 		}
 		
 		
@@ -217,9 +231,10 @@ class acf_controller_user {
 			'user_form'	=> $user_form
 		);
 		
-		if( $user_id )
-		{
+		if( $user_id ) {
+		
 			$args['user_id'] = $user_id;
+			
 		}
 		
 		
@@ -228,14 +243,14 @@ class acf_controller_user {
 		
 		
 		// render
-		if( !empty($field_groups) ):
+		if( !empty($field_groups) ) {
 			
 			acf_form_data(array( 
 				'post_id'	=> $post_id, 
 				'nonce'		=> 'user' 
 			));
 			
-			foreach( $field_groups as $field_group ): 
+			foreach( $field_groups as $field_group ) {
 				
 				$fields = acf_get_fields( $field_group );
 
@@ -257,9 +272,9 @@ class acf_controller_user {
 				<?php endif; ?>
 				<?php 
 				
-			endforeach; 
+			}
 		
-		endif;
+		}
 		
 	}
 	
@@ -280,21 +295,26 @@ class acf_controller_user {
 	function save_user( $user_id ) {
 		
 		// verify and remove nonce
-		if( ! acf_verify_nonce('user') )
-		{
+		if( ! acf_verify_nonce('user') ) {
+			
 			return $user_id;
+		
 		}
 		
 	    
 	    // save data
-	    if( acf_validate_save_post(true) )
-		{
+	    if( acf_validate_save_post(true) ) {
+	    	
 			acf_save_post( "user_{$user_id}" );
-		}	
+		
+		}
+			
 	}
 			
 }
 
-new acf_controller_user();
+new acf_form_user();
+
+endif;
 
 ?>

@@ -1,29 +1,42 @@
-<?php 
+<?php
 
-class acf_controller_widget {
+/*
+*  ACF Widget Form Class
+*
+*  All the logic for adding fields to widgets
+*
+*  @class 		acf_form_widget
+*  @package		ACF
+*  @subpackage	Forms
+*/
+
+if( ! class_exists('acf_form_widget') ) :
+
+class acf_form_widget {
+	
 	
 	/*
-	*  Constructor
+	*  __construct
 	*
-	*  This function will construct all the neccessary actions and filters
+	*  This function will setup the class functionality
 	*
 	*  @type	function
-	*  @date	23/06/12
-	*  @since	3.1.8
+	*  @date	5/03/2014
+	*  @since	5.0.0
 	*
-	*  @param	N/A
-	*  @return	N/A
+	*  @param	n/a
+	*  @return	n/a
 	*/
 	
-	function __construct()
-	{
+	function __construct() {
+		
 		// actions
-		add_action( 'admin_enqueue_scripts',			array( $this, 'admin_enqueue_scripts' ) );
+		add_action('admin_enqueue_scripts',		array( $this, 'admin_enqueue_scripts'));
 		
 		
 		// actions
-		add_action( 'in_widget_form', 					array($this, 'in_widget_form'), 10, 3 );
-		add_filter( 'widget_update_callback',			array($this, 'widget_update_callback'), 10, 4 );
+		add_action('in_widget_form', 			array($this, 'edit_widget'), 10, 3);
+		add_filter('widget_update_callback',	array($this, 'save_widget'), 10, 4);
 		
 	}
 	
@@ -41,25 +54,22 @@ class acf_controller_widget {
 	*  @return	(boolean)
 	*/
 	
-	function validate_page()
-	{
+	function validate_page() {
+		
 		// global
 		global $pagenow;
 		
 		
-		// vars
-		$r = false;
-		
-		
 		// validate page
-		if( $pagenow == 'widgets.php' )
-		{
-			$r = true;
+		if( $pagenow == 'widgets.php' ) {
+		
+			return true;
+		
 		}
 		
 		
 		// return
-		return $r;
+		return false;
 	}
 	
 	
@@ -80,9 +90,10 @@ class acf_controller_widget {
 	function admin_enqueue_scripts() {
 		
 		// validate page
-		if( ! $this->validate_page() )
-		{
+		if( ! $this->validate_page() ) {
+		
 			return;
+			
 		}
 		
 		
@@ -95,24 +106,31 @@ class acf_controller_widget {
 	}
 	
 	
-	function in_widget_form( $widget, $return, $instance ) {
+	/*
+	*  edit_widget
+	*
+	*  This function will render the fields for a widget form
+	*
+	*  @type	function
+	*  @date	11/06/2014
+	*  @since	5.0.0
+	*
+	*  @param	$widget (object)
+	*  @param	$return (null)
+	*  @param	$instance (object)
+	*  @return	$post_id (int)
+	*/
+	function edit_widget( $widget, $return, $instance ) {
 		
 		// vars
 		$post_id = 0;
 		
 		
-		if( $widget->number !== '__i__' )
-		{
+		if( $widget->number !== '__i__' ) {
+		
 			$post_id = "widget_{$widget->id}";
+			
 		}
-		
-		
-	
-		// render post data
-		acf_form_data(array( 
-			'post_id'	=> $post_id, 
-			'nonce'		=> 'widget' 
-		));
 		
 		
 		// get field groups
@@ -122,52 +140,87 @@ class acf_controller_widget {
 		
 		
 		// render
-		if( !empty($field_groups) ):
+		if( !empty($field_groups) ) {
 			
-			foreach( $field_groups as $field_group ): 
+			// render post data
+			acf_form_data(array( 
+				'post_id'	=> $post_id, 
+				'nonce'		=> 'widget' 
+			));
+			
+			
+			foreach( $field_groups as $field_group ) {
 				
 				$fields = acf_get_fields( $field_group );
 				
 				acf_render_fields( $post_id, $fields, 'div', 'field' );
 				
-			endforeach;
+			}
 			
 			if( $widget->updated ): ?>
 			<script type="text/javascript">
 			(function($) {
 				
-				// vars
-				$widget = $('[id^="widget"][id$="<?php echo $widget->id; ?>"]');
-				
-				acf.do_action('append', $widget );
+				acf.do_action('append', $('[id^="widget"][id$="<?php echo $widget->id; ?>"]') );
 				
 			})(jQuery);	
 			</script>
 			<?php endif;
 		
-		endif;
+		}
 		
 	}
 	
 	
-	function widget_update_callback( $instance, $new_instance, $old_instance, $widget ) {
+	/*
+	*  save_widget
+	*
+	*  This function will save the widget form data
+	*
+	*  @type	function
+	*  @date	11/06/2014
+	*  @since	5.0.0
+	*
+	*  @param	$post_id (int)
+	*  @return	$post_id (int)
+	*/
+	
+	function save_widget( $instance, $new_instance, $old_instance, $widget ) {
 		
 		// verify and remove nonce
-		if( ! acf_verify_nonce('widget') )
-		{
+		if( ! acf_verify_nonce('widget') ) {
+		
 			return $instance;
+			
 		}
 		
 	    
 	    // save data
-	    if( acf_validate_save_post() )
-		{
+	    if( acf_validate_save_post() ) {
+	    	
 			acf_save_post( "widget_{$widget->id}" );		
+		
 		}
 		
+		
+		// return
 		return $instance;
 		
 	}
+	
+	
+	/*
+	*  admin_footer
+	*
+	*  This function will add some custom HTML to the footer of the edit page
+	*
+	*  @type	function
+	*  @date	11/06/2014
+	*  @since	5.0.0
+	*
+	*  @param	n/a
+	*  @return	n/a
+	*/
 	
 	function admin_footer() {
 		
@@ -178,9 +231,10 @@ class acf_controller_widget {
 	 acf.add_filter('is_field_ready_for_js', function( ready, $field ){
 	 	
 		// widget
-		if( $field.parents('#available-widgets').exists() )
-		{
+		if( $field.parents('#available-widgets').exists() ) {
+		
 			ready = false;
+		
 		}
 		
 		// return
@@ -197,24 +251,27 @@ class acf_controller_widget {
 			
 			
 			// bail early if this form does not contain ACF data
-			if( ! $form.find('#acf-form-data').exists() )
-			{
+			if( ! $form.find('#acf-form-data').exists() ) {
+			
 				return true;
+			
 			}
 			
 			
 			// ignore this submit?
-			if( acf.validation.ignore == 1 )
-			{
+			if( acf.validation.ignore == 1 ) {
+			
 				acf.validation.ignore = 0;
 				return true;
+			
 			}
 			
 	
 			// bail early if disabled
-			if( acf.validation.active == 0 )
-			{
+			if( acf.validation.active == 0 ) {
+			
 				return true;
+			
 			}
 	
 			
@@ -269,6 +326,8 @@ class acf_controller_widget {
 	
 }
 
-new acf_controller_widget();
+new acf_form_widget();
+
+endif;
 
 ?>
