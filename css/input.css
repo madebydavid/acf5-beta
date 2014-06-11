@@ -636,7 +636,11 @@ ul.acf-checkbox-list li label {
 	position: relative;
 }
 
-.acf-image-uploader .view { float: left; position: relative; max-width: 100%; }
+.acf-image-uploader .view {
+	float: left;
+	position: relative;
+	max-width: 100%;
+}
 
 .acf-image-uploader img {
 	width: 100%;
@@ -649,7 +653,7 @@ ul.acf-checkbox-list li label {
 	padding: 0;
 }
 
-.acf-image-uploader .no-image p {
+.acf-image-uploader .hide-if-value p {
 	display: block;
 	margin: 0 !important;
 }
@@ -725,10 +729,14 @@ ul.acf-checkbox-list li label {
 }
 
 .acf-file-uploader .file-info > li.icon {
-	background: #F9F9F9;
+	background: #F1F1F1;
 	border-right: #E5E5E5 solid 1px;
 }
 
+.acf-file-uploader .hide-if-value p {
+	display: block;
+	margin: 0 !important;
+}
 
 /*
 *  Hover
