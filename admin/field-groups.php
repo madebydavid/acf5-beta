@@ -89,7 +89,7 @@ class acf_field_groups {
 		
 		
 		// validate action run only once
-		remove_action('trashed_post', array($this, 'trashed_post'));
+		//remove_action('trashed_post', array($this, 'trashed_post'));
 		
 		
 		// trash field group
@@ -121,7 +121,7 @@ class acf_field_groups {
 		
 		
 		// validate action run only once
-		remove_action('untrashed_post', array($this, 'untrashed_post'));
+		//remove_action('untrashed_post', array($this, 'untrashed_post'));
 		
 		
 		// trash field group
@@ -153,7 +153,7 @@ class acf_field_groups {
 		
 		
 		// validate action run only once
-		remove_action('deleted_post', array($this, 'deleted_post'));
+		//remove_action('deleted_post', array($this, 'deleted_post'));
 		
 		
 		// trash field group
