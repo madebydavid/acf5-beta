@@ -74,7 +74,7 @@ class acf_settings_export {
 	function load() {
 		
 		// all export pages should not load local fields
-		acf_update_setting('local', false);
+		acf_disable_local();
 		
 		
 		if( acf_verify_nonce('import') )
@@ -112,7 +112,7 @@ class acf_settings_export {
 	function html() {
 		
 		// disable JSON to avoid conflicts between DB and JSON
-		acf_update_setting('local', false);
+		acf_disable_local();
 		
 		
 		// load view

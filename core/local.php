@@ -3,7 +3,8 @@
 class acf_local {
 	
 	// vars
-	var $groups 	= array(),
+	var $enabled	= true,
+		$groups 	= array(),
 		$fields 	= array(),
 		$parents 	= array();
 		
@@ -251,6 +252,82 @@ function acf_local() {
 
 
 /*
+*  acf_disable_local
+*
+*  This function will disable the local functionality for DB only interaction
+*
+*  @type	function
+*  @date	11/06/2014
+*  @since	5.0.0
+*
+*  @param	n/a
+*  @return	n/a
+*/
+
+function acf_disable_local() {
+	
+	acf_local()->enabled = false;
+	
+}
+
+
+/*
+*  acf_enable_local
+*
+*  This function will enable the local functionality
+*
+*  @type	function
+*  @date	11/06/2014
+*  @since	5.0.0
+*
+*  @param	n/a
+*  @return	n/a
+*/
+
+function acf_enable_local() {
+	
+	acf_local()->enabled = true;
+	
+}
+
+
+/*
+*  acf_is_local_enabled
+*
+*  This function will return true|false if the local functionality is enabled
+*
+*  @type	function
+*  @date	11/06/2014
+*  @since	5.0.0
+*
+*  @param	n/a
+*  @return	n/a
+*/
+
+function acf_is_local_enabled() {
+	
+	// validate
+	if( !acf_get_setting('local', false) ) {
+		
+		return false;
+		
+	}
+	
+	
+	if( !acf_local()->enabled ) {
+		
+		return false;
+		
+	}
+	
+	
+	// return
+	return true;
+	
+}
+
+
+/*
 *  acf_have_local_field_groups
 *
 *  This function will return true if fields exist for a given 'parent' key (field group key or field key)
@@ -266,27 +343,23 @@ function acf_local() {
 function acf_have_local_field_groups() {
 	
 	// validate
-	if( !acf_get_setting('local', false) ) {
+	if( !acf_is_local_enabled() ) {
 		
 		return false;
 		
 	}
 	
 	
-	// vars
-	$r = false;
-	
-	
-	// acf_local
+	// check for groups
 	if( !empty(acf_local()->groups) ) {
 		
-		$r = true;
+		return true;
 		
 	}
 	
 	
 	// return
-	return $r;
+	return false;
 	
 }
 
@@ -360,27 +433,23 @@ function acf_add_local_field_group( $field_group ) {
 function acf_is_local_field_group( $key ) {
 	
 	// validate
-	if( !acf_get_setting('local', false) ) {
+	if( !acf_is_local_enabled() ) {
 		
 		return false;
 		
 	}
 	
 	
-	// vars
-	$r = false;
-	
-	
-	// acf_local
+	// check groups
 	if( isset( acf_local()->groups[ $key ] ) ) {
 		
-		$r = true;
+		return true;
 		
 	}
 	
 	
 	// return
-	return $r;
+	return false;
 	
 }
 
@@ -421,27 +490,23 @@ function acf_get_local_field_group( $key ) {
 function acf_is_local_field( $key ) {
 	
 	// validate
-	if( !acf_get_setting('local', false) ) {
+	if( !acf_is_local_enabled() ) {
 		
 		return false;
 		
 	}
 	
 	
-	// vars
-	$r = false;
-	
-	
-	// acf_local
+	// check fields
 	if( isset( acf_local()->fields[ $key ] ) ) {
 		
-		$r = true;
+		return true;
 		
 	}
 	
 	
 	// return
-	return $r;
+	return false;
 	
 }
 
@@ -482,27 +547,23 @@ function acf_get_local_field( $key ) {
 function acf_have_local_fields( $key ) {
 
 	// validate
-	if( !acf_get_setting('local', false) ) {
+	if( !acf_is_local_enabled() ) {
 		
 		return false;
 		
 	}
 	
 	
-	// vars
-	$r = false;
-	
-	
-	// acf_local
+	// check parents
 	if( isset( acf_local()->parents[ $key ] ) ) {
 		
-		$r = true;
+		return true;
 		
 	}
 	
 	
 	// return
-	return $r;
+	return false;
 	
 }
 
@@ -524,9 +585,10 @@ function acf_get_local_fields( $key ) {
 
 	$fields = array();
 	
-	foreach( acf_local()->parents[ $key ] as $key )
-	{
+	foreach( acf_local()->parents[ $key ] as $key ) {
+		
 		$fields[] = acf_get_field( $key );
+		
 	}
 	
 	return $fields;

@@ -81,9 +81,10 @@ class acf_field_groups {
 	function trashed_post( $post_id ) {
 		
 		// validate post type
-		if( get_post_type($post_id) != 'acf-field-group' )
-		{
+		if( get_post_type($post_id) != 'acf-field-group' ) {
+		
 			return;
+		
 		}
 		
 		

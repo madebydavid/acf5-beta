@@ -872,7 +872,7 @@ function acf_update_field_wp_unique_post_slug( $slug, $post_ID, $post_status, $p
 function acf_duplicate_field( $selector = 0, $parent_id = 0 ){
 	
 	// disable JSON to avoid conflicts between DB and JSON
-	acf_update_setting('local', false);
+	acf_disable_local();
 	
 	
 	// load the origional field
@@ -924,14 +924,19 @@ function acf_duplicate_field( $selector = 0, $parent_id = 0 ){
 
 function acf_delete_field( $selector = 0 ) {
 	
+	// disable JSON to avoid conflicts between DB and JSON
+	acf_disable_local();
+	
+	
 	// load the origional field gorup
 	$field = acf_get_field( $selector );
 	
 	
 	// bail early if field did not load correctly
-	if( empty($field) )
-	{
+	if( empty($field) ) {
+		
 		return false;
+	
 	}
 	
 	
@@ -964,14 +969,19 @@ function acf_delete_field( $selector = 0 ) {
 
 function acf_trash_field( $selector = 0 ) {
 	
+	// disable JSON to avoid conflicts between DB and JSON
+	acf_disable_local();
+	
+	
 	// load the origional field gorup
 	$field = acf_get_field( $selector );
 	
 	
 	// bail early if field did not load correctly
-	if( empty($field) )
-	{
+	if( empty($field) ) {
+		
 		return false;
+	
 	}
 	
 	
@@ -1003,14 +1013,19 @@ function acf_trash_field( $selector = 0 ) {
 
 function acf_untrash_field( $selector = 0 ) {
 	
+	// disable JSON to avoid conflicts between DB and JSON
+	acf_disable_local();
+	
+	
 	// load the origional field gorup
 	$field = acf_get_field( $selector );
 	
 	
 	// bail early if field did not load correctly
-	if( empty($field) )
-	{
+	if( empty($field) ) {
+		
 		return false;
+	
 	}
 	
 	

@@ -526,7 +526,7 @@ function acf_update_field_group_wp_unique_post_slug( $slug, $post_ID, $post_stat
 function acf_duplicate_field_group( $selector = 0, $new_post_id = 0 ) {
 	
 	// disable JSON to avoid conflicts between DB and JSON
-	acf_update_setting('local', false);
+	acf_disable_local();
 	
 	
 	// load the origional field gorup
@@ -534,9 +534,10 @@ function acf_duplicate_field_group( $selector = 0, $new_post_id = 0 ) {
 	
 	
 	// bail early if field group did not load correctly
-	if( empty($field_group) )
-	{
+	if( empty($field_group) ) {
+	
 		return false;
+		
 	}
 	
 	
@@ -636,14 +637,19 @@ function acf_get_field_count( $field_group_id ) {
 
 function acf_delete_field_group( $selector = 0 ) {
 	
+	// disable JSON to avoid conflicts between DB and JSON
+	acf_disable_local();
+	
+	
 	// load the origional field gorup
 	$field_group = acf_get_field_group( $selector );
 	
 	
 	// bail early if field group did not load correctly
-	if( empty($field_group) )
-	{
+	if( empty($field_group) ) {
+	
 		return false;
+	
 	}
 	
 	
@@ -651,12 +657,14 @@ function acf_delete_field_group( $selector = 0 ) {
 	$fields = acf_get_fields($field_group);
 	
 	
-	if( !empty($fields) )
-	{
-		foreach( $fields as $field )
-		{
+	if( !empty($fields) ) {
+	
+		foreach( $fields as $field ) {
+			
 			acf_delete_field( $field['ID'] );
+		
 		}
+	
 	}
 	
 	
@@ -688,14 +696,19 @@ function acf_delete_field_group( $selector = 0 ) {
 
 function acf_trash_field_group( $selector = 0 ) {
 	
+	// disable JSON to avoid conflicts between DB and JSON
+	acf_disable_local();
+	
+	
 	// load the origional field gorup
 	$field_group = acf_get_field_group( $selector );
 	
 	
 	// bail early if field group did not load correctly
-	if( empty($field_group) )
-	{
+	if( empty($field_group) ) {
+	
 		return false;
+	
 	}
 	
 	
@@ -703,12 +716,14 @@ function acf_trash_field_group( $selector = 0 ) {
 	$fields = acf_get_fields($field_group);
 	
 	
-	if( !empty($fields) )
-	{
-		foreach( $fields as $field )
-		{
+	if( !empty($fields) ) {
+	
+		foreach( $fields as $field ) {
+			
 			acf_trash_field( $field['ID'] );
+			
 		}
+		
 	}
 	
 	
@@ -740,14 +755,19 @@ function acf_trash_field_group( $selector = 0 ) {
 
 function acf_untrash_field_group( $selector = 0 ) {
 	
+	// disable JSON to avoid conflicts between DB and JSON
+	acf_disable_local();
+	
+	
 	// load the origional field gorup
 	$field_group = acf_get_field_group( $selector );
 	
 	
 	// bail early if field group did not load correctly
-	if( empty($field_group) )
-	{
+	if( empty($field_group) ) {
+	
 		return false;
+		
 	}
 	
 	
@@ -755,12 +775,14 @@ function acf_untrash_field_group( $selector = 0 ) {
 	$fields = acf_get_fields($field_group);
 	
 	
-	if( !empty($fields) )
-	{
-		foreach( $fields as $field )
-		{
+	if( !empty($fields) ) {
+	
+		foreach( $fields as $field ) {
+			
 			acf_untrash_field( $field['ID'] );
+		
 		}
+	
 	}
 	
 	
@@ -791,8 +813,8 @@ function acf_untrash_field_group( $selector = 0 ) {
 *  @return	n/a
 */
 
-function acf_get_field_group_style( $field_group )
-{
+function acf_get_field_group_style( $field_group ) {
+	
 	// vars
 	$e = '';
 	

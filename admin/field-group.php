@@ -140,7 +140,7 @@ class acf_field_group {
     
 		
 		// disable JSON to avoid conflicts between DB and JSON
-		acf_update_setting('local', false);
+		acf_disable_local();
 		
 		
 		// actions
@@ -321,7 +321,7 @@ class acf_field_group {
         
         
         // disable local to avoid conflicts between DB and local
-		acf_update_setting('local', false);
+		acf_disable_local();
 		
         
         // save fields
@@ -907,7 +907,7 @@ class acf_field_group {
 	function ajax_move_field() {
 		
 		// disable JSON to avoid conflicts between DB and JSON
-		acf_update_setting('local', false);
+		acf_disable_local();
 		
 		
 		$args = acf_parse_args($_POST, array(
