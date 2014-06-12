@@ -1682,35 +1682,45 @@ function acf_order_by_search( $array, $search ) {
 	
 	// vars
 	$weights = array();
-	$needle = strtolower($search);
-			
+	$needle = strtolower( $search );
+	
+	
+	// add key prefix
+	foreach( array_keys($array) as $k ) {
+		
+		$array[ '_' . $k ] = acf_extract_var( $array, $k );
+		
+	}
+
 
 	// add search weight
 	foreach( $array as $k => $v ) {
 	
 		// vars
-		$search_weight = 0;
-		$haystack = strtolower($v);
-		$strpos = strpos($haystack, $needle);
+		$weight = 0;
+		$haystack = strtolower( $v );
+		$strpos = strpos( $haystack, $needle );
 		
 		
 		// detect search match
 		if( $strpos !== false ) {
 			
 			// set eright to length of match
-			$search_weight = strlen($needle);
+			$weight = strlen( $search );
 			
 			
 			// increase weight if match starts at begining of string
 			if( $strpos == 0 ) {
 				
-				$search_weight++;
+				$weight++;
 				
 			}
+			
 		}
 		
 		
-		$weights[] = $search_weight;
+		// append to wights
+		$weights[ $k ] = $weight;
 		
 	}
 	
@@ -1719,9 +1729,18 @@ function acf_order_by_search( $array, $search ) {
 	array_multisort( $weights, SORT_DESC, $array );
 	
 	
+	// remove key prefix
+	foreach( array_keys($array) as $k ) {
+		
+		$array[ substr($k,1) ] = acf_extract_var( $array, $k );
+		
+	}
+		
+	
 	// return
 	return $array;
 }
+
 
 
 /*
