@@ -1,0 +1,8 @@
+{
+    "name":"madebydavid/acf5-beta",
+    "description":"Advanced Custom Fields - Version 5 beta",
+    "type":"wordpress-plugin",
+    "require": {
+        "composer/installers": "~1.0"
+    }
+}
