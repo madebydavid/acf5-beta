@@ -36,7 +36,7 @@ class acf_form_taxonomy {
 		
 		// save
 		add_action('create_term',			array($this, 'save_term'), 10, 3);
-		add_action('edited_term',			array($this, 'save_term'), 10, 3);
+		add_action('edit_term',				array($this, 'save_term'), 10, 3);
 		
 		
 		// delete
@@ -303,6 +303,7 @@ class acf_form_taxonomy {
 			return $term_id;
 		
 		}
+		
 		
 	    
 	    // save data
