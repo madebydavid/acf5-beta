@@ -191,7 +191,7 @@ class acf_field_post_object extends acf_field {
 				foreach( array_keys($posts) as $post_id ) {
 					
 					// override data
-					$posts[ $post_id ] = $this->acf_get_post_title( $posts[ $post_id ], $field, $options['post_id'] );
+					$posts[ $post_id ] = $this->get_post_title( $posts[ $post_id ], $field, $options['post_id'] );
 					
 				};
 				
@@ -242,7 +242,7 @@ class acf_field_post_object extends acf_field {
 	
 	
 	/*
-	*  acf_get_post_title
+	*  get_post_title
 	*
 	*  This function returns the HTML for a result
 	*
@@ -256,7 +256,7 @@ class acf_field_post_object extends acf_field {
 	*  @return	(string)
 	*/
 	
-	function acf_get_post_title( $post, $field, $post_id = 0 ) {
+	function get_post_title( $post, $field, $post_id = 0 ) {
 		
 		// get post_id
 		if( !$post_id ) {
@@ -292,6 +292,55 @@ class acf_field_post_object extends acf_field {
 	
 	
 	/*
+	*  get_posts
+	*
+	*  This function will return an array of posts for a given field value
+	*
+	*  @type	function
+	*  @date	13/06/2014
+	*  @since	5.0.0
+	*
+	*  @param	$value (array)
+	*  @return	$value
+	*/
+	
+	function get_posts( $value ) {
+		
+		// force value to array
+		$value = acf_force_type_array( $value );
+		
+		
+		// convert values to int
+		$value = array_map('intval', $value);
+		
+		
+		// load posts in 1 query to save multiple DB calls from following code
+		if( count($value) > 1 ) {
+			
+			$posts = get_posts(array(
+				'posts_per_page'	=> -1,
+				'post_type'			=> acf_get_post_types(),
+				'post_status'		=> 'any',
+				'post__in'			=> $value,
+			));
+			
+		}
+		
+		
+		// update value to include $post
+		foreach( array_keys($value) as $i ) {
+			
+			$value[ $i ] = get_post( $value[ $i ] );
+			
+		}
+		
+		
+		// return
+		return $value;
+	}
+	
+	
+	/*
 	*  render_field()
 	*
 	*  Create the HTML interface for your field
@@ -312,36 +361,33 @@ class acf_field_post_object extends acf_field {
 		$field['choices'] = array();
 		
 		
-		// value
+		// populate choices if value exists
 		if( !empty($field['value']) ) {
 			
+			// get posts
+			$posts = $this->get_posts( $field['value'] );
+			
+			
 			// set choices
-			foreach( array_keys($field['value']) as $i ) {
+			if( !empty($posts) ) {
 				
-				// vars
-				$post = $field['value'][ $i ];
-				
-				
-				// append to choices
-				$field['choices'][ $post->ID ] = $this->acf_get_post_title( $post, $field );
-				
-				
-				// update value for select field to work
-				$field['value'][ $i ] = $post->ID;
-				
-			}
-			
-			
-			// convert back from array if neccessary
-			if( !$field['multiple'] ) {
-			
-				$field['value'] = array_shift($field['value']);
+				foreach( array_keys($posts) as $i ) {
+					
+					// vars
+					$post = acf_extract_var( $posts, $i );
+					
+					
+					// append to choices
+					$field['choices'][ $post->ID ] = $this->get_post_title( $post, $field );
+					
+				}
 				
 			}
 			
 		}
 
 		
+		// render
 		acf_render_field( $field );
 	}
 	
@@ -452,8 +498,8 @@ class acf_field_post_object extends acf_field {
 	
 	function format_value( $value, $post_id, $field, $template ) {
 		
-		// bail early if no value
-		if( empty($value) ) {
+		// bail early if no value or not for template
+		if( empty($value) || !$template ) {
 			
 			return $value;
 		
@@ -469,33 +515,16 @@ class acf_field_post_object extends acf_field {
 		
 		
 		// load posts if needed
-		if( !$template || $field['return_format'] == 'object' ) {
+		if( $field['return_format'] == 'object' ) {
 			
-			// load posts in 1 query to save multiple DB calls from following code
-			if( count($value) > 1 ) {
-				
-				$posts = get_posts(array(
-					'posts_per_page'	=> -1,
-					'post_type'			=> acf_get_post_types(),
-					'post_status'		=> 'any',
-					'post__in'			=> $value,
-				));
-				
-			}
-			
-			
-			// update value to include $post
-			foreach( array_keys($value) as $i ) {
-				
-				$value[ $i ] = get_post( $value[ $i ] );
-				
-			}
+			// get posts
+			$value = $this->get_posts( $value );
 		
 		}
 		
 		
 		// convert back from array if neccessary
-		if( $template && !$field['multiple'] ) {
+		if( !$field['multiple'] ) {
 		
 			$value = array_shift($value);
 			

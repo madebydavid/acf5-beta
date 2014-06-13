@@ -210,22 +210,8 @@ class acf_field_page_link extends acf_field {
 				
 				foreach( array_keys($posts) as $post_id ) {
 					
-					// vars
-					$post = $posts[ $post_id ];
-					
-					
-					// get title
-					$title = acf_get_post_title( $post );
-					
-					
-					// filters
-					$title = apply_filters('acf/fields/page_link/result', $title, $post, $field, $options['post_id']);
-					$title = apply_filters('acf/fields/page_link/result/name=' . $field['name'] , $title, $post, $field, $options['post_id']);
-					$title = apply_filters('acf/fields/page_link/result/key=' . $field['key'], $title, $post, $field, $options['post_id']);
-					
-					
 					// override data
-					$posts[ $post_id ] = $title;
+					$posts[ $post_id ] = $this->get_post_title( $posts[ $post_id ], $field, $options['post_id'] );
 					
 				};
 				
@@ -265,6 +251,119 @@ class acf_field_page_link extends acf_field {
 	
 	
 	/*
+	*  get_post_title
+	*
+	*  This function returns the HTML for a result
+	*
+	*  @type	function
+	*  @date	1/11/2013
+	*  @since	5.0.0
+	*
+	*  @param	$post (object)
+	*  @param	$field (array)
+	*  @param	$post_id (int) the post_id to which this value is saved to
+	*  @return	(string)
+	*/
+	
+	function get_post_title( $post, $field, $post_id = 0 ) {
+		
+		// get post_id
+		if( !$post_id ) {
+			
+			$form_data = acf_get_setting('form_data');
+			
+			if( !empty($form_data['post_id']) ) {
+				
+				$post_id = $form_data['post_id'];
+				
+			} else {
+				
+				$post_id = get_the_ID();
+				
+			}
+			
+		}
+		
+		
+		// vars
+		$title = acf_get_post_title( $post );
+			
+		
+		// filters
+		$title = apply_filters('acf/fields/page_link/result', $title, $post, $field, $post_id);
+		$title = apply_filters('acf/fields/page_link/result/name=' . $field['_name'], $title, $post, $field, $post_id);
+		$title = apply_filters('acf/fields/page_link/result/key=' . $field['key'], $title, $post, $field, $post_id);
+		
+		
+		// return
+		return $title;
+	}
+	
+	
+	/*
+	*  get_posts
+	*
+	*  This function will return an array of posts for a given field value
+	*
+	*  @type	function
+	*  @date	13/06/2014
+	*  @since	5.0.0
+	*
+	*  @param	$value (array)
+	*  @return	$value
+	*/
+	
+	function get_posts( $value ) {
+		
+		// force value to array
+		$value = acf_force_type_array( $value );
+		
+		
+		// get selected post ID's
+		$post_ids = array();
+		
+		foreach( $value as $v ) {
+			
+			if( is_numeric($v) ) {
+				
+				$post_ids[] = intval($v);
+				
+			}
+			
+		}
+		
+		
+		// load posts in 1 query to save multiple DB calls from following code
+		if( count($post_ids) > 1 ) {
+			
+			$posts = get_posts(array(
+				'posts_per_page'	=> -1,
+				'post_type'			=> acf_get_post_types(),
+				'post_status'		=> 'any',
+				'post__in'			=> $post_ids,
+			));
+			
+		}
+		
+		
+		// upate value to include $post
+		foreach( array_keys($value) as $i ) {
+			
+			if( is_numeric($value[ $i ]) ) {
+				
+				$value[ $i ] = get_post( $value[ $i ] );
+				
+			}
+			
+		}
+		
+		
+		// return
+		return $value;
+	}
+	
+	
+	/*
 	*  render_field()
 	*
 	*  Create the HTML interface for your field
@@ -285,44 +384,35 @@ class acf_field_page_link extends acf_field {
 		$field['choices'] = array();
 		
 		
-		// value
+		// populate choices if value exists
 		if( !empty($field['value']) ) {
 			
+			// get posts
+			$posts = $this->get_posts( $field['value'] );
+			
+			
 			// set choices
-			foreach( array_keys($field['value']) as $i ) {
+			if( !empty($posts) ) {
 				
-				// vars
-				$post = $field['value'][ $i ];
-				
-				
-				if( is_object($post) ) {
+				foreach( array_keys($posts) as $i ) {
 					
-					// append to choices
-					$field['choices'][ $post->ID ] = acf_get_post_title( $post );
+					// vars
+					$post = acf_extract_var( $posts, $i );
 					
 					
-					// update value for select field to work
-					$field['value'][ $i ] = $post->ID;
+					if( is_object($post) ) {
+						
+						// append to choices
+						$field['choices'][ $post->ID ] = $this->get_post_title( $post, $field );
 					
-				} else {
-					
-					// append to choices
-					$field['choices'][ $post ] = $post;
-					
-					
-					// update value for select field to work
-					$field['value'][ $i ] = $post;
+					} else {
+						
+						// append to choices
+						$field['choices'][ $post ] = $post;
+												
+					}
 					
 				}
-				
-				
-			}
-			
-			
-			// convert back from array if neccessary
-			if( !$field['multiple'] ) {
-			
-				$field['value'] = array_shift($field['value']);
 				
 			}
 			
@@ -426,11 +516,11 @@ class acf_field_page_link extends acf_field {
 	
 	function format_value( $value, $post_id, $field, $template ) {
 		
-		// bail early if no value
-		if( empty($value) ) {
-		
-			return $value;
+		// bail early if no value or not for template
+		if( empty($value) || !$template ) {
 			
+			return $value;
+		
 		}
 		
 		
@@ -438,55 +528,12 @@ class acf_field_page_link extends acf_field {
 		$value = acf_force_type_array( $value );
 		
 		
-		// get selected post ID's
-		$post_ids = array();
-		
-		foreach( $value as $v ) {
+		// get posts
+		$value = $this->get_posts( $value );
 			
-			if( is_numeric($v) ) {
-				
-				$post_ids[] = intval($v);
-				
-			}
 			
-		}
-		
-		
-		// load posts in 1 query to save multiple DB calls from following code
-		if( count($post_ids) > 1 ) {
-			
-			$posts = get_posts(array(
-				'posts_per_page'	=> -1,
-				'post_type'			=> acf_get_post_types(),
-				'post_status'		=> 'any',
-				'post__in'			=> $post_ids,
-			));
-			
-		}
-		
-		
-		// upate value to include $post
-		foreach( array_keys($value) as $i ) {
-			
-			if( is_numeric($value[ $i ]) ) {
-				
-				if( $template ) {
-					
-					$value[ $i ] = get_permalink( $value[ $i ] );
-					
-				} else {
-					
-					$value[ $i ] = get_post( $value[ $i ] );
-					
-				}
-				
-			}
-			
-		}
-		
-		
 		// convert back from array if neccessary
-		if( $template && !$field['multiple'] ) {
+		if( !$field['multiple'] ) {
 		
 			$value = array_shift($value);
 			
